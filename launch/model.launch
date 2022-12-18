@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="model" default="$(find patrol_robot)/urdf/turtlebot3_manipulation_robot.urdf.xacro"/>
+  <arg name="x_pos" default="0.0"/>
+  <arg name="y_pos" default="0.0"/>
+  <arg name="z_pos" default="0.0"/>
+
+  <rosparam file="$(find patrol_robot)/config/gazebo_controller.yaml" command="load"/>
+
+
+  <!-- We resume the logic in empty_world.launch -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch"> 
+    <arg name="paused" value="false"/>
+    <arg name="gui" value="true"/>
+    <arg name="use_sim_time" value="true"/>
+  </include>
+
+  <param name="robot_description" command="$(find xacro)/xacro --inorder $(find patrol_robot)/urdf/turtlebot3_manipulation_robot.urdf.xacro"/>
+
+   <!-- start joint state publisher -->
+  <node pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" name="joint_state_publisher_gui">
+    <!--<param name="/use_gui" value="true"/> -->
+    <!--<rosparam param="source_list">["/joint_states"]</rosparam> -->
+  </node>
+  
+  <!-- start robot state publisher -->
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher"/>
+
+
+  <node pkg="gazebo_ros" type="spawn_model" name="spawn_urdf" 
+    args="-urdf -model turtlebot3 -x 0 -y 0 -z 0.05 -param robot_description " />
+
+
+  <!-- controller utils -->
+  <!-- <include file="$(find patrol_robot)/launch/controller_utils.launch"/> -->
+
+  <!-- run controllers -->
+  <!--<include file="$(find patrol_robot)/launch/turtlebot3_manipulation_controller.launch"/> -->
+
+  <rosparam file="$(find patrol_robot)/config/motors_arm_config.yaml" command="load" ns="/arm_controller" />
+
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" output="screen" args="--namespace=/arm_controller
+        joint_state_controller
+        joint1_position_controller
+        joint2_position_controller
+        joint3_position_controller
+        joint4_position_controller
+        --shutdown-timeout 3">
+  </node>
+
+</launch>
