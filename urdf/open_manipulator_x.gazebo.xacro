@@ -29,16 +29,16 @@
   <!-- Link5 -->
   <RefLink ref="link5"/>
 
-  <!-- gripper_link -->
-  <RefLink ref="gripper_link"/>
+  <!-- gripper_link 
+  <RefLink ref="gripper_link"/> -->
 
-  <!-- gripper_link_sub -->
-  <RefLink ref="gripper_link_sub"/>
+  <!-- gripper_link_sub 
+  <RefLink ref="gripper_link_sub"/> -->
 
-  <!-- end effector link -->
+  <!-- end effector link 
   <gazebo reference="end_effector_link">
     <material>Gazebo/Red</material>
-  </gazebo>
+  </gazebo> -->
 
   <!-- ros_control plugin 
   <gazebo>
