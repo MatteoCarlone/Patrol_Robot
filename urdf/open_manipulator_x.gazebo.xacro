@@ -29,29 +29,7 @@
   <!-- Link5 -->
   <RefLink ref="link5"/>
 
-  <!-- gripper_link 
-  <RefLink ref="gripper_link"/> -->
-
-  <!-- gripper_link_sub 
-  <RefLink ref="gripper_link_sub"/> -->
-
-  <!-- end effector link 
-  <gazebo reference="end_effector_link">
-    <material>Gazebo/Red</material>
-  </gazebo> -->
-
-  <!-- ros_control plugin 
-  <gazebo>
-    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
-      <controlPeriod>0.001</controlPeriod>
-      <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
-      <legacyModeNS>true</legacyModeNS>
-    </plugin>
-  </gazebo>
-
-  -->
-
-    <!-- ros_control plugin for joints movement -->
+  <!-- ros_control plugin for joints movement -->
   <gazebo>
     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
       <robotNamespace>arm_controller</robotNamespace>
@@ -59,18 +37,5 @@
       <legacyModeNS>true</legacyModeNS>
     </plugin>
   </gazebo>
-
-  <!-- loading plugin: mimic joints works in gazebo now 
-  <gazebo>
-    <plugin name="gazebo_gripper_ros_control" filename="libroboticsgroup_gazebo_mimic_joint_plugin.so">
-      <joint>gripper</joint>
-      <mimicJoint>gripper_sub</mimicJoint>
-      <multiplier>1.0</multiplier>
-      <offset>0.0</offset>
-      <hasPID>/gazebo_ros_control/pid_gains/gripper_sub</hasPID>
-    </plugin>
-  </gazebo>
-
-  -->
 
 </robot>

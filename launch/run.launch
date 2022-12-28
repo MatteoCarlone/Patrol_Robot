@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<launch>
+
+	<rosparam param="config/environment_size"> [-2,2,0,3] </rosparam>
+	<rosparam param="config/random_battery_time"> [30,50] </rosparam>
+
+	
+
+	<node pkg="armor" type="execute" name="armor_service" args="it.emarolab.armor.ARMORMainService"/>
+
+	<node pkg="patrol_robot" type="initial_state.py" name="initial_state" launch-prefix="xterm -e" required="true"/>
+
+	<node pkg="patrol_robot" type="reasoner.py" name="reasoner" launch-prefix="xterm -e" required="true"/>
+
+	<node pkg="patrol_robot" type="planner.py" name="planner" launch-prefix="xterm -e" required="true"/>
+
+    <node pkg="patrol_robot" type="controller.py" name="controller" launch-prefix="xterm -e" required="true"/>
+
+    <node pkg="patrol_robot" type="battery.py" name="battery" launch-prefix="xterm -e" required="true"/> 
+
+    <node pkg="patrol_robot" type="fsm.py" name="fsm" launch-prefix="xterm -e" required="true"/> 
+
+</launch>
