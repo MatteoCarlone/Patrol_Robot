@@ -82,8 +82,10 @@ class InitialState:
         # /start Empty Server , execute callback
         self.server = rospy.Service(env.SERVER_START , Empty , self.execute)
 
+        # ROS message subscriber on the topic /aruco_detector/id 
         rospy.Subscriber("/aruco_detector/id", Int32, self.id_callback)
 
+        # define empty lists and dictionaries
         self.id_list = []
         self.loc = []
         self.loc_dict = {}
@@ -99,30 +101,34 @@ class InitialState:
         # get the current time instant 
         curr_time = int(time.time())
 
-
+        # wait for move_arm srv to be online
         rospy.wait_for_service('move_arm')
-
+        # Create a client for the 'move_arm' service
         MR_client = rospy.ServiceProxy('move_arm',MarkerRoutine)
+
+        # Call the 'MarkerRoutine' method of the 'move_arm' service with an argument of 1 (MR_left position)
         resp = MR_client(1)
         print(resp.message)
         time.sleep(5)
-
+        # Call the 'MarkerRoutine' method of the 'move_arm' service with an argument of 2 (home position)
         resp = MR_client(2)
         print(resp.message)
         time.sleep(5)
-
+        # Call the 'MarkerRoutine' method of the 'move_arm' service with an argument of 1 (MR_right position)
         resp = MR_client(3)
         print(resp.message)
         time.sleep(5)
-
+        # Call the 'MarkerRoutine' method of the 'move_arm' service with an argument of 1 (MR_back position)
         resp = MR_client(4)
         print(resp.message)
         time.sleep(5)
 
+        # wait for room_info srv to be online
         rospy.wait_for_service('/room_info')
-
+        # Create a client for the 'room_info' service
         MS_client = rospy.ServiceProxy('/room_info',RoomInformation)
 
+        # construct lists and dictionaries from infos retrived from the room_info srv
         for i in self.id_list:
             resp = MS_client(i)
             self.loc.append(resp.room)
@@ -130,12 +136,13 @@ class InitialState:
             self.loc_coordinates[resp.room] = [resp.x,resp.y]
             self.coordinates_loc[str(resp.x) + ',' + str(resp.y)] = resp.room
 
-            
             time.sleep(0.5)
 
+        # load dictionaries on the ROS parameter server
         rospy.set_param('ids',self.loc_coordinates)
         rospy.set_param('coord',self.coordinates_loc)
 
+        # Call the 'MarkerRoutine' method of the 'move_arm' service with an argument of 5 (stop position)
         resp = MR_client(5)
         print(resp.message)
         time.sleep(3)
@@ -144,7 +151,8 @@ class InitialState:
         # load ontology from the absolute path 
         self.client.utils.load_ref_from_file(self.path + "topological_map.owl", "http://bnc/exp-rob-lab/2022-23",
                                             True, "PELLET", True, False)  
-                                            
+        
+         # -------  Set up all the rooms with respective doors ------- #                      
         self.client.utils.mount_on_ref()
         self.client.utils.set_log_to_terminal(True)
 
@@ -154,31 +162,6 @@ class InitialState:
             for j in connections:
                 print(j.through_door)
                 self.client.manipulation.add_objectprop_to_ind("hasDoor", i, j.through_door)
-
-
-
-        # -------  Set up all the rooms with respective doors ------- #
-
-        """
-        self.client.manipulation.add_objectprop_to_ind("hasDoor", 'E', "D6")
-        self.client.manipulation.add_objectprop_to_ind("hasDoor", 'E', "D7")
-
-        self.client.manipulation.add_objectprop_to_ind("hasDoor", 'C1', "D1")
-        self.client.manipulation.add_objectprop_to_ind("hasDoor", 'C1', "D2")
-        self.client.manipulation.add_objectprop_to_ind("hasDoor", 'C1', "D5")
-        self.client.manipulation.add_objectprop_to_ind("hasDoor", 'C1', "D6")
-
-        self.client.manipulation.add_objectprop_to_ind("hasDoor", 'C2', "D3")
-        self.client.manipulation.add_objectprop_to_ind("hasDoor", 'C2', "D4")
-        self.client.manipulation.add_objectprop_to_ind("hasDoor", 'C2', "D5")
-        self.client.manipulation.add_objectprop_to_ind("hasDoor", 'C2', "D7")
-
-        self.client.manipulation.add_objectprop_to_ind("hasDoor", 'R1', "D1")
-        self.client.manipulation.add_objectprop_to_ind("hasDoor", 'R2', "D2")
-        self.client.manipulation.add_objectprop_to_ind("hasDoor", 'R3', "D3")
-        self.client.manipulation.add_objectprop_to_ind("hasDoor", 'R4', "D4")
-        
-        """
         # ----------------------------------------------------------- #
 
         # Robot starting room
@@ -186,9 +169,7 @@ class InitialState:
 
         # Set all rooms visited at curr_time time instant
         for room in self.loc:
-
             self.client.manipulation.add_dataprop_to_ind('visitedAt',room, 'Long', str(curr_time))
-
 
         # Disjoint for Individuals understanding
         self.client.call('DISJOINT','IND','',self.loc)
@@ -197,17 +178,17 @@ class InitialState:
         self.client.utils.apply_buffered_changes()
         self.client.utils.sync_buffered_reasoner()
 
-
         print('LOADING COMPLETED')
 
         # returning an empty response to notify the completed load of the ontology
         return EmptyResponse()
 
     def id_callback(self,msg):
-
-        
+        """
+        Callback of the ROS message on the topic /aruco_detector/id
+        to retrive codes from aruco markers and stuck them in a list
+        """
         if(msg.data not in self.id_list):
-
             self.id_list.append(msg.data)
             
 
@@ -219,5 +200,4 @@ if __name__ == "__main__":
     # Instantiate the node manager class and wait.
     InitialState()
     
-
     rospy.spin()

@@ -28,7 +28,7 @@ from patrol_robot import environment as env
 import numpy as np
 import re
 from std_msgs.msg import Bool
-#from patrol_robot.helper import InterfaceHelper
+
 
 #--------------#
 
@@ -75,72 +75,68 @@ class PlaningAction(object):
                                       execute_cb=self.execute_callback, 
                                       auto_start=False)
 
+        # Initialize the starting room
         self.start_room = env.START_LOC
-
+        # Define boolean variable for the battery state 
         self._battery_low = False
-
-        #interfacehelper = InterfaceHelper()
-
-        #InterfaceHelper Object declaration
-        #self._helper = helper
-
-        #print('interfacehelper')
+        # # ROS message subscriber on the topic /battery_low 
         self.sub_battery = rospy.Subscriber(env.TOPIC_BATTERY_LOW, Bool, self._battery_cb)
 
+        # start plan action server
         self._as.start()
 
     def _battery_cb(self,battery_value):
+
+        """
+        Callback function for /battery_low topic. Stores the battery state.
+
+        """
 
         # store battery state from /battery_low topic message
         self._battery_low = battery_value.data
 
     def execute_callback(self, goal):
 
+        """
+        Callback function for the action server.
+
+        """
+
         print('\n###############\nPLANNING EXECUTION')
 
+        # Get list of room coordinates from ROS parameters
         loc_coordinates = rospy.get_param('ids')
 
         if self._battery_low:
 
+            # Wait until robot is in a room during the low battery routine 
             print('BATTERY_LOW')
 
             # Ontology Reasoning
             self.client.utils.apply_buffered_changes()
             self.client.utils.sync_buffered_reasoner()
-
+            # Query ontology for current location of robot
             current_start_room = self.client.query.objectprop_b2_ind('isIn','Robot1')
-            # format information
+            # Format room name from ontology response
             current_start_room = re.search('#(.+?)>',current_start_room[0]).group(1)
 
-            print(self.start_room)
-            print('\n')
-            print(current_start_room)
-            print('\n')
-
+            # Loop until robot is no longer in the previous target room
             r = rospy.Rate(1)
             while(current_start_room == self.start_room):
 
                 # Ontology Reasoning
                 self.client.utils.apply_buffered_changes()
                 self.client.utils.sync_buffered_reasoner()
-
+                # Query ontology for current location of robot
                 current_start_room = self.client.query.objectprop_b2_ind('isIn','Robot1')
-                # format information
+                # Format room name from ontology response
                 current_start_room = re.search('#(.+?)>',current_start_room[0]).group(1)
-
-                print(self.start_room)
-                print('\n')
-                print(current_start_room)
-                print('\n')
-
                 r.sleep()
-
+                
+            # Check if robot is already in target room
             if current_start_room == goal.target:
-                print('equal')
                 self._as.set_aborted()
                 return
-
-        print('\nOUT_OF_WHILE\n')
 
         # get the current robot location
         self.start_room = self.client.query.objectprop_b2_ind('isIn','Robot1')

@@ -76,48 +76,60 @@ class ControllingAction(object):
 
     def __init__(self):
 
+        # Initialize the ArmorClient and SimpleActionServer
         self.client = ArmorClient('armor_client', 'reference')
 
         # MoveBase Action message
         self.Goal_msg=MoveBaseGoal() 
 
+        # Define boolean variable for the battery state
         self._battery_low = False
 
         # MoceBase Action client
         self.mb_client = actionlib.SimpleActionClient('/move_base', MoveBaseAction) 
 
+        # Instantiate and start the action server based on the `SimpleActionServer` class.
         self._as = SimpleActionServer(env.ACTION_CONTROLLER,
             ControlAction,
             execute_cb=self.execute_callback,
             auto_start=False)
 
+        # start plan action server
         self._as.start()
 
+        # Define boolean variable for the reaching state of the target
         self.achieved = False
 
+        # ROS message subscriber on the topic /battery_low 
         self.sub_battery = rospy.Subscriber(env.TOPIC_BATTERY_LOW, Bool, self._battery_cb)
 
+        # ROS message publisher on the topic /cmd_vel
         self.velocity_pub = rospy.Publisher('/cmd_vel',Twist,queue_size=10)
 
+        # define velocity message object
         self.vel_msg = Twist()
-
-
-        #self.C_interfacehelper = InterfaceHelper()
-
-        # InterfaceHelper Object declaration
-        #self._helper = helper   
-
+ 
     def _battery_cb(self,battery_value):
+
+        """
+        Callback function for the /battery_low subscriber. Stores the state of the battery.
+
+        """
 
         # store battery state from /battery_low topic message
         self._battery_low = battery_value.data
 
-
-
-
     def action_client(self):
 
-        self.mb_client.wait_for_server()    #Waiting until the connection to the ActionServer is established
+        """
+        Defining the client function that constructs a SimpleActionClient 
+        in order to open a connection to the ActionServer. 
+        This function sets some parameters of the client 
+        
+        """
+
+        #Waiting until the connection to the ActionServer is established
+        self.mb_client.wait_for_server()    
 
         # Setting some goal's fields
         self.Goal_msg.target_pose.header.frame_id = 'map'            
@@ -125,8 +137,15 @@ class ControllingAction(object):
         self.Goal_msg.target_pose.pose.orientation.w = 1
 
     def done_cb(self,status,result):
-
-
+        """
+        Callback that gets called on transitions to Done.
+        The callback should take two parameters: the terminal state (as an integer from actionlib_msgs/GoalStatus) and the result.
+        This Function is called after a goal is processed. 
+        It is used to notify the client of the current status of every goal in the system.
+        """
+        
+        #Calling the right message for each possible status(int)
+        #if status=3 notify that the goal has been achieved, so the boolean variable achieved is set to True 
         if(status==3):
             print('\nGOAL_REACHED\n')
             self.achieved = True
@@ -136,18 +155,17 @@ class ControllingAction(object):
 
         
     def active_cb(self):
-        #No-parameter callback that gets called on transitions to Active.
-        #This function is called before the goal is processed
+        """
+        No-parameter callback that gets called on transitions to Active.
+        This function is called before the goal is processed
+        """
         print("Goald processed...")
 
-    #def feedback_cb(self,feedback):
-        #Callback that gets called whenever feedback for this goal is received. Takes one parameter: the feedback.
-        
-        #rospy.loginfo(")\tFeedback Active, the Modality is running...")
-
     def set_goal(self,x, y):
-        # Creates a goal and sends it to the action server. 
-    
+        """
+         Creates a goal and sends it to the action server. 
+
+        """
         self.Goal_msg.target_pose.pose.position.x = x
         self.Goal_msg.target_pose.pose.position.y = y
         self.mb_client.send_goal(self.Goal_msg, self.done_cb, self.active_cb)
@@ -156,7 +174,9 @@ class ControllingAction(object):
     
         print('\n###############\nCONTROLLING EXECUTION')
 
+        # Get list of room coordinates from ROS parameters
         loc_coordinates = rospy.get_param('ids')
+        # Get list of coordinates of each room from ROS parameters
         coordinates_loc = rospy.get_param('coord')
 
         # Check if the provided plan is processable. If not, this service will be aborted.
@@ -165,6 +185,7 @@ class ControllingAction(object):
             self._as.set_aborted()
             return
 
+        # create and set the result for the action server
         result = ControlResult()
         result.reached_point = goal.point_set[-1]
 
@@ -172,10 +193,10 @@ class ControllingAction(object):
         starting_room = coordinates_loc[str(goal.point_set[0].x) + ',' + str(goal.point_set[0].y)]
         reached_room = coordinates_loc[str(result.reached_point.x) + ',' + str(result.reached_point.y)]
 
-        #Setting goal parameters for the action
+        # Setting goal parameters for the action
         self.action_client()
 
-        #Setting a new goal_position
+        # Setting a new goal_position
         print(str(goal.point_set[-1].x)+',' +str(goal.point_set[-1].y))
         self.set_goal(goal.point_set[-1].x, goal.point_set[-1].y)
         
@@ -183,51 +204,37 @@ class ControllingAction(object):
         # Initialise the `feedback`
         feedback = ControlFeedback()
 
+        # Loop until the target room is reached
         r = rospy.Rate(0.5)
         while(not self.achieved):
             print('moving')
             r.sleep()
-            
+        
+        # wait for move_arm srv to be online
         rospy.wait_for_service('move_arm')
 
+        # Create a client for the 'move_arm' service
         MR_client = rospy.ServiceProxy('move_arm',MarkerRoutine)
 
+        # Call the 'MarkerRoutine' method of the 'move_arm' service with an argument of 2 (home position)
         resp = MR_client(2)
         print(resp.message)
         rospy.sleep(5)
 
+        # Publish an angular velocity message to the 'velocity_pub' topic
         self.vel_msg.angular.z = 1
-
         self.velocity_pub.publish(self.vel_msg)
-
         rospy.sleep(4)
-
+        # stop the robot rotation
         self.vel_msg.angular.z = 0
-
         self.velocity_pub.publish(self.vel_msg)
 
+        # Call the 'MarkerRoutine' method of the 'move_arm' service with an argument of 5 (stop position)
         resp = MR_client(5)
         print(resp.message)
         rospy.sleep(5)
 
-        # loop to simulate robot moving in time 
-        '''
-        for point in goal.point_set:
-            # Check that the client did not cancel this service.
-            if self._as.is_preempt_requested():
-                print('Service has been cancelled by the client!')
-                # Actually cancel this service.
-                self._as.set_preempted()
-                return
-
-            print('  ['+ str("%.2f"%point.x) +','+ str("%.2f"%point.y)+']', end = '\r')
-
-            # update feedback
-            feedback.reached_point = point
-            self._as.publish_feedback(feedback)
-
-            rospy.sleep(0.5)
-        '''
+        # cancel all remaining or additional goals
         self.mb_client.cancel_all_goals()
 
         # replace current robot location
@@ -258,7 +265,6 @@ class ControllingAction(object):
         self.achieved = False
 
         self._as.set_succeeded(result)
-
 
         return  # Succeeded.
 
