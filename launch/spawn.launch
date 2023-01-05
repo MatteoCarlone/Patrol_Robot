@@ -55,7 +55,7 @@
 
   <!-- push robot_description to factory and spawn robot in gazebo at the origin, change x,y,z arguments to spawn in a different position -->
   <node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model" args="-urdf -param robot_description -model robot 
-    -x -6 -y 11 -z 0.45 -Y 1.57 -J joint2 0.0 -J joint3 0.0"
+    -x -6 -y 11 -z 0.45 -Y 1.57"
     respawn="false" output="screen" />
 
   <include file="$(find moveit_ass)/launch/ros_controllers.launch"/>

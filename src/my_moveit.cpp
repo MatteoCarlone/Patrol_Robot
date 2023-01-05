@@ -27,6 +27,10 @@ bool reach(patrol_robot::MarkerRoutine::Request &req, patrol_robot::MarkerRoutin
     position=4;
     resp.message = "MR_back";
     }
+  else if (req.pos == 5){ 
+    position=5;
+    resp.message = "stop";
+    }
   else{ 
 
     return false; 
@@ -76,6 +80,11 @@ int main(int argc, char** argv)
       }
      if (position==4){
       group.setNamedTarget("MR_back");
+      group.move();
+      position=0;
+      }
+     if (position==5){
+      group.setNamedTarget("stop");
       group.move();
       position=0;
       }

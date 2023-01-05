@@ -63,11 +63,12 @@
   <include file="$(find patrol_robot)/launch/run.launch">
   </include>
 
-  <!-- Run Rviz and load the default config to see the state of the move_group node 
+  <!-- Run Rviz and load the default config to see the state of the move_group node  
   <include file="$(find moveit_ass)/launch/moveit_rviz.launch">
     <arg name="rviz_config" value="$(find moveit_ass)/launch/moveit.rviz"/>
     <arg name="debug" value="$(arg debug)"/>
-  </include> --> 
+  </include> -->
+
 
   <!-- If database loading was enabled, start mongodb as well -->
   <include file="$(find moveit_ass)/launch/default_warehouse_db.launch" if="$(arg db)">
@@ -76,4 +77,26 @@
 
   <node pkg="patrol_robot" type="moveit_node" name="moveit_node" required="true"/>
 
+  <node pkg="patrol_robot" type="marker_server" name="marker_server" required="true"/>
+
+  <node pkg="aruco_ros" type="aruco_detector" name="aruco_detector" args="image:=/camera/rgb/image_raw" required="true"/>
+  <!--
+  <node pkg="image_view" type="image_view" name="image_view" args="image:=/camera/rgb/image_raw" required="true"/> -->
+
+  <!-- Start Mapper to genreate map from laser scans 
+  <rosparam file="$(find patrol_robot)/param/ros.yaml"/>
+  <node name="Mapper" pkg="nav2d_karto" type="mapper" output="screen">
+    <rosparam file="$(find patrol_robot)/param/mapper.yaml"/>
+  </node> -->
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find patrol_robot)/config/sim.rviz" />
+
+  <!-- <node name="rviz" pkg="rviz" type="rviz"/> -->
+
+  <include file="$(find patrol_robot)/launch/simulation_gmapping.launch" /> 
+  
+  <include file="$(find patrol_robot)/launch/move_base.launch" /> 
+  
+  
+  
 </launch>

@@ -85,8 +85,8 @@ class Reasoner:
 
       self.client = ArmorClient("armor_client", "reference")
 
-      interfacehelper = InterfaceHelper()
-      self._helper = interfacehelper
+      self.P_interfacehelper = InterfaceHelper()
+      self._helper = self.P_interfacehelper
 
       self.reachable_list = []
       self.urgent_list = []

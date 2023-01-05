@@ -27,6 +27,8 @@ from armor_api.armor_client import ArmorClient
 from patrol_robot import environment as env
 import numpy as np
 import re
+from std_msgs.msg import Bool
+#from patrol_robot.helper import InterfaceHelper
 
 #--------------#
 
@@ -73,22 +75,87 @@ class PlaningAction(object):
                                       execute_cb=self.execute_callback, 
                                       auto_start=False)
 
+        self.start_room = env.START_LOC
+
+        self._battery_low = False
+
+        #interfacehelper = InterfaceHelper()
+
+        #InterfaceHelper Object declaration
+        #self._helper = helper
+
+        #print('interfacehelper')
+        self.sub_battery = rospy.Subscriber(env.TOPIC_BATTERY_LOW, Bool, self._battery_cb)
+
         self._as.start()
+
+    def _battery_cb(self,battery_value):
+
+        # store battery state from /battery_low topic message
+        self._battery_low = battery_value.data
 
     def execute_callback(self, goal):
 
         print('\n###############\nPLANNING EXECUTION')
 
+        loc_coordinates = rospy.get_param('ids')
+
+        if self._battery_low:
+
+            print('BATTERY_LOW')
+
+            # Ontology Reasoning
+            self.client.utils.apply_buffered_changes()
+            self.client.utils.sync_buffered_reasoner()
+
+            current_start_room = self.client.query.objectprop_b2_ind('isIn','Robot1')
+            # format information
+            current_start_room = re.search('#(.+?)>',current_start_room[0]).group(1)
+
+            print(self.start_room)
+            print('\n')
+            print(current_start_room)
+            print('\n')
+
+            r = rospy.Rate(1)
+            while(current_start_room == self.start_room):
+
+                # Ontology Reasoning
+                self.client.utils.apply_buffered_changes()
+                self.client.utils.sync_buffered_reasoner()
+
+                current_start_room = self.client.query.objectprop_b2_ind('isIn','Robot1')
+                # format information
+                current_start_room = re.search('#(.+?)>',current_start_room[0]).group(1)
+
+                print(self.start_room)
+                print('\n')
+                print(current_start_room)
+                print('\n')
+
+                r.sleep()
+
+            if current_start_room == goal.target:
+                print('equal')
+                self._as.set_aborted()
+                return
+
+        print('\nOUT_OF_WHILE\n')
+
         # get the current robot location
-        start_room = self.client.query.objectprop_b2_ind('isIn','Robot1')
+        self.start_room = self.client.query.objectprop_b2_ind('isIn','Robot1')
         # format information
-        start_room = re.search('#(.+?)>',start_room[0]).group(1)
+        self.start_room = re.search('#(.+?)>',self.start_room[0]).group(1)
 
         # mapping start_room location into coordinates
-        start_point = env.Map_R[start_room]
+        start_point = loc_coordinates[self.start_room]
+
 
     	# mapping the target location into coordinates
-        target_point = env.Map_R[goal.target]
+        target_point = loc_coordinates[goal.target]
+
+        print('Start Room: '+self.start_room+'\n')
+        print('Target Room: '+goal.target+'\n')
 
         log_msg = (f'Starting-Room [{start_point[0]}, {start_point[1]}] , Target-Room [{target_point[0]}, '
                        f'{target_point[1]}] ')

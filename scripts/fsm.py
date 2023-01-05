@@ -71,6 +71,8 @@ class Initial(smach.State):
         # InterfaceHelper Object declaration
         self._helper = interfacehelper
 
+        print('init_fsm')
+
     def execute(self, userdata):
 
         """
@@ -78,11 +80,16 @@ class Initial(smach.State):
 
         """
 
+
         # /start service client request
         self._helper.start_client() 
 
+        print('req srv')
+
         # looping until transition
         while not rospy.is_shutdown():
+
+            print('initialization')
 
             # acquire mutex
             self._helper.mutex.acquire()
@@ -142,6 +149,8 @@ class Reasoning(smach.State):
 
         # InterfaceHelper Object declaration
         self._helper = interfacehelper
+
+
 
     def execute(self, userdata):
         """
@@ -458,19 +467,21 @@ class Recharge(smach.State):
 
 def main():
 
+    print('fsm')
     # Initialize ros-node
     rospy.init_node(env.NODE_FSM)
-
+    print('fsm2')
     # InterfaceHelper Object Initialization
     interfacehelper = InterfaceHelper()
 
+    
 	# Create a SMACH state machine
     sm_top = smach.StateMachine(outcomes=['fsm'])
     sm_top.userdata.sm_counter = 0
 
     # ------ Main State Machine ------ #
     with sm_top:
-
+        
 
         smach.StateMachine.add('INITIAL', Initial(interfacehelper), 
                                transitions={'start':'REASONING'},

@@ -31,7 +31,8 @@ from armor_api.armor_client import ArmorClient
 from patrol_robot import environment as env
 
 from patrol_robot.srv import MarkerRoutine
-
+from patrol_robot.srv import RoomInformation
+from std_msgs.msg import Int32
 
 
 #--------------#
@@ -81,9 +82,17 @@ class InitialState:
         # /start Empty Server , execute callback
         self.server = rospy.Service(env.SERVER_START , Empty , self.execute)
 
+        rospy.Subscriber("/aruco_detector/id", Int32, self.id_callback)
+
+        self.id_list = []
+        self.loc = []
+        self.loc_dict = {}
+        self.loc_coordinates = {}
+        self.coordinates_loc = {}
+
     def execute(self,request):
 
-        time.sleep(15)
+        time.sleep(5)
 
         print('\n###############\nTOPOLOGY LOADING EXECUTION')
         
@@ -110,6 +119,27 @@ class InitialState:
         print(resp.message)
         time.sleep(5)
 
+        rospy.wait_for_service('/room_info')
+
+        MS_client = rospy.ServiceProxy('/room_info',RoomInformation)
+
+        for i in self.id_list:
+            resp = MS_client(i)
+            self.loc.append(resp.room)
+            self.loc_dict[resp.room] = resp.connections
+            self.loc_coordinates[resp.room] = [resp.x,resp.y]
+            self.coordinates_loc[str(resp.x) + ',' + str(resp.y)] = resp.room
+
+            
+            time.sleep(0.5)
+
+        rospy.set_param('ids',self.loc_coordinates)
+        rospy.set_param('coord',self.coordinates_loc)
+
+        resp = MR_client(5)
+        print(resp.message)
+        time.sleep(3)
+
 
         # load ontology from the absolute path 
         self.client.utils.load_ref_from_file(self.path + "topological_map.owl", "http://bnc/exp-rob-lab/2022-23",
@@ -118,8 +148,18 @@ class InitialState:
         self.client.utils.mount_on_ref()
         self.client.utils.set_log_to_terminal(True)
 
+        for i in self.loc:
+            connections = self.loc_dict[i]
+            print(i)
+            for j in connections:
+                print(j.through_door)
+                self.client.manipulation.add_objectprop_to_ind("hasDoor", i, j.through_door)
+
+
+
         # -------  Set up all the rooms with respective doors ------- #
 
+        """
         self.client.manipulation.add_objectprop_to_ind("hasDoor", 'E', "D6")
         self.client.manipulation.add_objectprop_to_ind("hasDoor", 'E', "D7")
 
@@ -137,29 +177,39 @@ class InitialState:
         self.client.manipulation.add_objectprop_to_ind("hasDoor", 'R2', "D2")
         self.client.manipulation.add_objectprop_to_ind("hasDoor", 'R3', "D3")
         self.client.manipulation.add_objectprop_to_ind("hasDoor", 'R4', "D4")
-
+        
+        """
         # ----------------------------------------------------------- #
 
         # Robot starting room
-        self.client.manipulation.add_objectprop_to_ind("isIn", 'Robot1', "E")
+        self.client.manipulation.add_objectprop_to_ind("isIn", 'Robot1', 'E')
 
         # Set all rooms visited at curr_time time instant
-        for room in env.Loc:
+        for room in self.loc:
 
             self.client.manipulation.add_dataprop_to_ind('visitedAt',room, 'Long', str(curr_time))
 
 
         # Disjoint for Individuals understanding
-        self.client.call('DISJOINT','IND','',env.Loc)
+        self.client.call('DISJOINT','IND','',self.loc)
 
         # First Reasoning
         self.client.utils.apply_buffered_changes()
         self.client.utils.sync_buffered_reasoner()
 
+
         print('LOADING COMPLETED')
 
         # returning an empty response to notify the completed load of the ontology
         return EmptyResponse()
+
+    def id_callback(self,msg):
+
+        
+        if(msg.data not in self.id_list):
+
+            self.id_list.append(msg.data)
+            
 
 if __name__ == "__main__":
 
@@ -168,5 +218,6 @@ if __name__ == "__main__":
 
     # Instantiate the node manager class and wait.
     InitialState()
+    
 
     rospy.spin()
