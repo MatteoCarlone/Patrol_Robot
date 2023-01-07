@@ -1,4 +1,5 @@
-# Patrol_Robot 
+# Patrol_Robot <img src="https://user-images.githubusercontent.com/81308076/211048300-5561fde5-e477-427f-b16c-a8e362f97bd8.png"  alt="drawing" width="50"/>
+
 
 **A ROS-based package that simulate a surveillance robot in a gazebo environment by exploiting Aruco markers detection , MoveIt , SLAM Gmapping algorithm and the Move_Base Navigation package.**
 
