@@ -79,6 +79,8 @@ This repository contains a ROS package named `patrol_robot` that includes the fo
 	- [ros.yaml](param/ros.yaml): load some general parameters in the ROS parameter server for KartoSlam.
  - [docs/](docs/): It contains the necessary sphinx files for the documentation.
  - [topology/](topology/): It contains the basic ontology that will be constructed by the robot in the initial phase.
+ - [config/](config/): It contatins Rviz configuration files.
+	- [my_sim.rviz](config/my_sim.rviz): file to set up the Rviz visualizer. 
 
  </details>
 
