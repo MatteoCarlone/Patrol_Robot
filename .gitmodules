@@ -1,0 +1,3 @@
+[submodule "MoveIt_PkG_Turtlebot3_Waffle-Pi-manipulation"]
+	path = MoveIt_PkG_Turtlebot3_Waffle-Pi-manipulation
+	url = https://github.com/MatteoCarlone/MoveIt_PkG_Turtlebot3_Waffle-Pi-manipulation
