@@ -48,6 +48,12 @@ In addition to this, there's a separated room in which the robot spawn and start
 ALl the simulation world description is located in the [world folder](world/) as the [assignment_world.world file](world/assignment_world.world).
 Since the Marker detection was quite difficult in the default environment I decided to change it removing some shaders and background artifacts to let the robot better detect.
 
+*Gazebo Environment:*
+<p align="center">
+<img src="https://user-images.githubusercontent.com/81308076/211161257-bb0495e7-12ae-4a37-81cc-5fc5888edc0f.PNG"  alt="drawing" width="400"/>
+</p>
+
+
 ### Mission Phases 
 
 **First Phase**
