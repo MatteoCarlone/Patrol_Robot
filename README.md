@@ -52,7 +52,7 @@ Since the Mrker detection was quite difficult in the default environment I decid
 During the first mission phase the robot is capable of detecting 7 Aruco markers placed in different positions without moving from its spawn position.
 To achieve the result the arm is moved using the MoveIt package to orient the camera toward the markers in a fast and robust manner. The my_moveit node in the src folder 
 implements the interface between the program and moving allowing to request a predefined motions of the arm. A MoveIt package has been created for this specific robot and arm, stored
-in this [repository]().
+in this [repository](https://github.com/MatteoCarlone/MoveIt_PkG_Turtlebot3_Waffle-Pi-manipulation).
 The aruco marker detection is managed by the aruco_detector node of the package [aruco_ros]() it trivially needs to subscribe to the Astra camera topic: /camera/rgb/image_raw  .
 from the aruco markers the robot retrive just codes that will then be traslated in informations about the environment thanks to the marker_server node in the src folder.
 this passage link this project with the architecture of the first assignment, since all the necessary data to build the ontology of the environment to be patrolled are the ones get from the marker_server
@@ -163,7 +163,7 @@ provides all the required dependencies.
 
 Follow these steps to install the software.
  - Clone this repository inside your ROS workspace (which should be sourced in your `.bashrc`).
- - Clone this MoveIt repository inside your ROS workspace (which should be sourced in your `.bashrc`).
+ - Clone this [MoveIt repository](https://github.com/MatteoCarlone/MoveIt_PkG_Turtlebot3_Waffle-Pi-manipulation) inside your ROS workspace (which should be sourced in your `.bashrc`).
  - Run `chmod +x <file_name>` for each file inside the `scripts` folder.
  - Install `xterm` by entering the command `sudo apt install -y xterm`.
  - Install `smach` by entering the command `sudo apt-get install ros-noetic-smach-ros`
