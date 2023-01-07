@@ -2,7 +2,7 @@
 
 **A ROS-based package that simulate a surveillance robot in a gazebo environment by exploiting Aruco markers detection , MoveIt , SLAM Gmapping algorithm and the Move_Base Navigation package.**
 
-The software architecture at the base of this package is explained in this [respository](https://github.com/MatteoCarlone/Patrol_Robot_Architecture). 
+The software architecture at the base of this package is explained in this respository: [**Patrol_Robot_Architecture**](https://github.com/MatteoCarlone/Patrol_Robot_Architecture) . 
 
 *Full Code Documentation available*  [**|HERE|**]( https://matteocarlone.github.io/Patrol_Robot/)
 
@@ -39,11 +39,13 @@ Overall, the combination of the turtlebot3's existing features and the added tur
 <img src="https://user-images.githubusercontent.com/81308076/211048300-5561fde5-e477-427f-b16c-a8e362f97bd8.png"  alt="drawing" width="200"/>
 </p>
 
+The Robot description is in the [urdf folder](urdf/). *Note* that the file [robot_moveit.urdf](urdf/robot_moveit.urdf) is the final description used, all the other files in the folder are the original xacro descriptions from which Moveit has generated the final urdf.
+
 ### The Environment
-The Environment is exactly the same of the of this [repo]() in which I tested the saftware architecture at the base of the simulation, with the only different that now is a 3-D space with structural obstacles that the robot will have to avoid and take into account while moving.
+The Environment is exactly the same of the of this [repo](https://github.com/MatteoCarlone/Patrol_Robot_Architecture) in which I tested the software architecture at the base of the simulation, with the only different that now is a 3-D space with structural obstacles that the robot will have to avoid and take into account while moving.
 In addition to this, there's a separated room in which the robot spawn and start a marker detection to retrive all the necessary environment indormations.
-ALl the simulation world description is located in the [world folder]() as the assignment_world.world file.
-Since the Mrker detection was quite difficult in the default environment I decided to change it removing some shaders and background artifacts to let the robot better detect.
+ALl the simulation world description is located in the [world folder](world/) as the [assignment_world.world file](world/assignment_world.world).
+Since the Marker detection was quite difficult in the default environment I decided to change it removing some shaders and background artifacts to let the robot better detect.
 
 ### Mission Phases 
 
@@ -53,10 +55,10 @@ During the first mission phase the robot is capable of detecting 7 Aruco markers
 To achieve the result the arm is moved using the MoveIt package to orient the camera toward the markers in a fast and robust manner. The my_moveit node in the src folder 
 implements the interface between the program and moving allowing to request a predefined motions of the arm. A MoveIt package has been created for this specific robot and arm, stored
 in this [repository](https://github.com/MatteoCarlone/MoveIt_PkG_Turtlebot3_Waffle-Pi-manipulation).
-The aruco marker detection is managed by the aruco_detector node of the package [aruco_ros]() it trivially needs to subscribe to the Astra camera topic: /camera/rgb/image_raw  .
-from the aruco markers the robot retrive just codes that will then be traslated in informations about the environment thanks to the marker_server node in the src folder.
+The aruco marker detection is managed by the aruco_detector node of the package [aruco_ros](https://github.com/CarmineD8/aruco_ros) it trivially needs to subscribe to the Astra camera topic: `/camera/rgb/image_raw`  .
+from the aruco markers the robot retrive just codes that will then be traslated in informations about the environment thanks to the [marker_server node](src/marker_server.cpp) in the [src folder](src/).
 this passage link this project with the architecture of the first assignment, since all the necessary data to build the ontology of the environment to be patrolled are the ones get from the marker_server
-via the RoomInformation service.
+via the RoomInformation service [in the srv folder](srv/).
 
 **Second Phase**
 
@@ -88,7 +90,7 @@ one for the Mapping of the unkonwn environment and one for the actual Navigation
     The message contains the map data as a *int8[]* data. Data are expressed in
     row-major order. Occupancy probabilities are in the range [0, 100]. Unknown
     is -1.
-  - `map_metadat`a, as a `nav_msgs/MapMetaData`
+  - `map_metadata`, as a `nav_msgs/MapMetaData`
     This topic contains basic information about the characteristics of the
     Occupancy Grid, for example the time at which the map was loaded, the
     map resolution, its width and height, the origin of the map
@@ -108,32 +110,32 @@ one for the Mapping of the unkonwn environment and one for the actual Navigation
 
       I used the **navfn global planner:**
 
-      - uses Dijkstra’s algorithm to find a global path with minimum
+  	- uses Dijkstra’s algorithm to find a global path with minimum
       cost between start point and end point.
       
   - **Local Path Planning**
 
       I used the **dwa local planner** , which works as follows:
 
-      1. Discretely sample in the robot’s control space (dx,dy,dtheta)
+	1. Discretely sample in the robot’s control space (dx,dy,dtheta)
         
-      2. For each sampled velocity, perform forward simulation from
+ 	2. For each sampled velocity, perform forward simulation from
         the robot’s current state to predict what would happen if the
         sampled velocity were applied for some (short) period of time.
       
-      3. Evaluate (score) each trajectory resulting from the forward
+   	3. Evaluate (score) each trajectory resulting from the forward
         simulation, using a metric that incorporates characteristics such
         as: proximity to obstacles, proximity to the goal, proximity to the
         global path, and speed. Discard illegal trajectories (those that
         collide with obstacles).
         
-      4. Pick the highest-scoring trajectory and send the associated
+   	4. Pick the highest-scoring trajectory and send the associated
         velocity to the mobile base.
       
-      5. Apply the velocity and repeat.
+   	5. Apply the velocity and repeat.
 
   The DWA planner depends on the local costmap which provides obstacle information. Therefore, tuning the parameters for the local costmap is crucial for optimal behavior of DWA local planner
-  All the parameters for both global and local planning are in the [param folder]().
+  All the parameters for both global and local planning are in the [param folder](param/).
   
 ## Diagrams
 
@@ -153,7 +155,6 @@ The whole architecture is well described in the following UML Diagrams.
 	  2. the second phase with the Navigation and Mapping
 
 Other Diagrams regarding the only Software Architecture [HERE](https://github.com/MatteoCarlone/Patrol_Robot_Architecture)
-
 
 ## Launching the Software
 
