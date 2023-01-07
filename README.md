@@ -2,7 +2,7 @@
 
 **A ROS-based package that simulate a surveillance robot in a gazebo environment by exploiting Aruco markers detection , MoveIt , SLAM Gmapping algorithm and the Move_Base Navigation package.**
 
-The software architecture at the base of this package is explained in this [respository](https://github.com/MatteoCarlone/Assignment1-ExproLab). 
+The software architecture at the base of this package is explained in this [respository](https://github.com/MatteoCarlone/Patrol_Robot_Architecture). 
 
 *Full Code Documentation available*  [**|HERE|**]( https://matteocarlone.github.io/Patrol_Robot/)
 
@@ -151,6 +151,8 @@ The whole architecture is well described in the following UML Diagrams.
 	  to recharge dock action. Moreover you can see:
 	  1. the first mission phase with aruco detection and arm motion
 	  2. the second phase with the Navigation and Mapping
+
+Other Diagrams regarding the only Software Architecture [HERE](https://github.com/MatteoCarlone/Patrol_Robot_Architecture)
 
 
 ## Launching the Software
