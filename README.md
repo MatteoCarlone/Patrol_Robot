@@ -23,6 +23,65 @@ The project aims to deepen the ROS (Robot-Operating-System) utilization by lever
 
 - [***Move Base Navigation PkG***](http://wiki.ros.org/move_base), ROS package that provides a simple interface for sending navigation goals to a robot and controlling its movement in the environment. It is part of the ROS Navigation Stack and is used to plan and execute robot trajectories to reach desired goals.
 
+## Project Structure 
+
+The following list includes a brief overview of each project component as well as their arrangement into directories and subfolders.
+
+<details>
+  <summary> Package list </summary>
+
+This repository contains a ROS package named `patrol_robot` that includes the following resources.
+ - [CMakeList.txt](CMakeList.txt): File to configure this package.
+ - [package.xml](package.xml): File to configure this package.
+ - [setup.py](setup.py): File to `import` python modules from the `utilities` folder into the 
+   files in the `script` folder. 
+ - [launcher/](launcher/): Contains the configuration to launch this package.
+    - [demo_assignment.launch](launch/run.launch): It launches this package by spawning x-term terminals to
+     visualize every ros-node outputs, Gazebo simulation and Rviz visualizer.
+ - [msg/](msg/): It contains the message exchanged through ROS topics.
+    - [Point.msg](msg/Point.msg): It is the message representing a 2D point.
+    - [RoomConnection.msg](msg/RoomConnection.msg): It is the message representing a room connection and trough which door.
+ - [srv/](srv/): It Contains the definition of each server used by this software.
+    - [Reason.srv](srv/Reason.srv): It defines the request and response to start up the reasoning process, it answers with room to be pointed.
+    - [RoomInformation.srv](srv/RoomInformation.srv): this service implement the translation from marker identifiers to informations regarding the environment.
+    - [MarkerRoutine.srv](srv/MarkerRoutine.srv): It defines the request to an arm position and a response with a string message related to the position selected. 
+ - [action/](action/): It contains the definition of each action server used by this software.
+    - [Plan.action](action/Plan.action): It defines the goal, feedback and results concerning 
+      motion planning.
+    - [Control.action](action/Control.action): It defines the goal, feedback and results 
+      concerning motion controlling.
+ - [scripts/](scripts/): It contains the implementation of each software components.
+    - [fsm.py](scripts/fsm.py): The Script implementing the SMACH Finite State Machine.
+    - [initial_state.py](scripts/initial_state.py): The Script implementing the initial, Aruco Detection, arm movements and load/initialization of the Ontology.
+    - [reasoner.py](scripts/reasoner.py): The Script implementing the reasoning the room to be guarded.
+    - [battery.py](scripts/battery.py): The Script implenting the battery and charging behaviour of the robot.
+    - [planner.py](scripts/planner.py): It is a dummy implementation of a motion planner.
+    - [controller.py](scripts/controller.py): It is the implementation of a motion controller trough the move_base action server.
+ - [utilities/exprolab_1/](utilities/exprolab_1/): It contains auxiliary python files, 
+   which are exploited by the files in the `scripts` folder.
+    - [environment.py](utilities/exprolab_1/environment.py): It contains the name 
+      of each *node*, *topic*, *server*, *actions* and *parameters* used in this architecture.
+    - [helper.py](utilities/exprolab_1/helper.py): It contains a so called InterfaceHelper Class that implements all the ros-srv and ros-action clients, 
+      and other auxiliary functions to manage the fsm transition and other global procedures.
+    - [ActionHelper.py](utilities/exprolab_1/ActionHelper.py): It contains a so called ActionHelper client usefull to simply manage ROS-Actions
+ - [urdf/](urdf/): It contains the robot model description.
+ 	- [turtlebot3_manipulation_robot.urdf.xacro](urdf/turtlebot3_manipulation_robot.urdf.xacro): the whole xacro description of the robot comprehensive of arm, 	     camera and sensors. It imports both the xacro descriptions of arm and robot present in the folder.
+	- [robot_moveit.urdf]: the whole urdf description of the robot comprehensive of arm, camera and sensors. It is a auto-generated description by the Moveit 	   assistant.
+ - [meshes/](meshes/): It contains all the robot model description meshes. the robot description has access to this folder.
+ - [param/](param/): It contains all the parameters necessary for move_base navigation and two file for the KartoSlam algorithm for possibile improvements.
+ 	- [global_costmap_params.yaml](param/global_costmap_params.yaml).
+	- [base_local_planner_params.yaml](param/base_local_planner_params.yaml).
+	- [local_costmap_params.yaml](param/local_costmap_params.yaml).
+	- [move_base_params.yaml](param/move_base_params.yaml).
+	- [costmap_common_params.yaml](param/costmap_common_params.yaml).
+	- all of the Move Base parameters are well described [here](https://kaiyuzheng.me/documents/navguide.pdf).
+	- [mapper.yaml](param/mapper.yaml): run the kartoSLAM algorithm with a specific configuration of the map.
+	- [ros.yaml](param/ros.yaml): load some general parameters in the ROS parameter server for KartoSlam.
+ - [docs/](docs/): It contains the necessary sphinx files for the documentation.
+ - [topology/](topology/): It contains the basic ontology that will be constructed by the robot in the initial phase.
+
+ </details>
+
 ## Project Scenario
 The patrolling robot is designed to firstly operate autonomously in a detached room.
 **|First Phase|** Upon being deployed, the robot uses its Aruco marker detection capabilities to gather information about the environment and determine the areas it should patrol.
