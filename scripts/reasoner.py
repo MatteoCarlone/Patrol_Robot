@@ -41,7 +41,7 @@ class Reasoner:
 
    """
     Class representing the Reasoning-State of the Smach-State-Machine, which decide the 
-    next room to point whenever a client-request on the custom-service /reason is perfomed by the 
+    next room to point whenever a client-request on the custom-service /reason is performed by the 
     finite state machine.
 
     Methods

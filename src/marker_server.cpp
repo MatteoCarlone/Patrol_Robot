@@ -2,8 +2,21 @@
 #include <assignment2/RoomConnection.h>
 #include <assignment2/RoomInformation.h>
 
+/*!
+ * \brief Service callback function for the room_information service.
+ *
+ * \param req Service request message. Contains the ID of the marker.
+ * \param res Service response message. Contains the room name, x and y coordinates, and a list of connections for the room associated with the marker ID in the request message.
+ *
+ * \return True if the service call was successful.
+ */
+
 bool markerCallback(assignment2::RoomInformation::Request &req, assignment2::RoomInformation::Response &res){
+
+	//! Create a RoomConnection message
 	assignment2::RoomConnection conn;
+
+	//! Check the marker ID and fill out the response message with the corresponding room information
 	switch (req.id){
 	case 11:
 		res.room = "E";
@@ -94,8 +107,11 @@ bool markerCallback(assignment2::RoomInformation::Request &req, assignment2::Roo
 
 int main(int argc, char **argv)
 {
+	//! Initialize ROS and the node
 	ros::init(argc, argv, "assignment2");
 	ros::NodeHandle nh;
+
+  	//! Advertise the room_info service
 	ros::ServiceServer oracle = nh.advertiseService( "/room_info",markerCallback);
 	ros::spin();
 	ros::shutdown();

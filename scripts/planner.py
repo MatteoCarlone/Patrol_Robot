@@ -79,7 +79,7 @@ class PlaningAction(object):
         self.start_room = env.START_LOC
         # Define boolean variable for the battery state 
         self._battery_low = False
-        # # ROS message subscriber on the topic /battery_low 
+        # ROS message subscriber on the topic /battery_low 
         self.sub_battery = rospy.Subscriber(env.TOPIC_BATTERY_LOW, Bool, self._battery_cb)
 
         # start plan action server
@@ -97,10 +97,6 @@ class PlaningAction(object):
 
     def execute_callback(self, goal):
 
-        """
-        Callback function for the action server.
-
-        """
 
         print('\n###############\nPLANNING EXECUTION')
 
@@ -132,7 +128,7 @@ class PlaningAction(object):
                 # Format room name from ontology response
                 current_start_room = re.search('#(.+?)>',current_start_room[0]).group(1)
                 r.sleep()
-                
+
             # Check if robot is already in target room
             if current_start_room == goal.target:
                 self._as.set_aborted()

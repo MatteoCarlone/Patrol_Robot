@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>scripts.planner &mdash; Patrol_Robot 1.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Patrol_Robot
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../scripts.html">Scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../src.html">Src</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../utilities.html">Utilities</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Patrol_Robot</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">scripts.planner</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for scripts.planner</h1><div class="highlight"><pre>
+<span></span><span class="ch">#! /usr/bin/env python</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">.. module:: Planner</span>
+<span class="sd">    :platform: Unix</span>
+<span class="sd">    :synopsis: Python code that plan a set via_points from a room to another</span>
+
+<span class="sd">.. moduleauthor:: Matteo Carlone &lt;matteo.carlone99@gmail.com&gt;</span>
+
+
+<span class="sd">Action:</span>
+
+<span class="sd">    /armor_client</span>
+<span class="sd">    motion/planner</span>
+
+
+<span class="sd">This Node implement the planning action of creating a set of via points between a room to another. </span>
+<span class="sd">Those via points will be then passed to the Controlling node to perform the actual movement.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1">#---Libraries---#</span>
+
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">from</span> <span class="nn">actionlib</span> <span class="kn">import</span> <span class="n">SimpleActionServer</span>
+<span class="kn">from</span> <span class="nn">patrol_robot.msg</span> <span class="kn">import</span> <span class="n">Point</span><span class="p">,</span> <span class="n">PlanAction</span><span class="p">,</span> <span class="n">PlanFeedback</span><span class="p">,</span> <span class="n">PlanResult</span>
+<span class="kn">from</span> <span class="nn">armor_api.armor_client</span> <span class="kn">import</span> <span class="n">ArmorClient</span>
+<span class="kn">from</span> <span class="nn">patrol_robot</span> <span class="kn">import</span> <span class="n">environment</span> <span class="k">as</span> <span class="n">env</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">std_msgs.msg</span> <span class="kn">import</span> <span class="n">Bool</span>
+
+
+<span class="c1">#--------------#</span>
+
+<div class="viewcode-block" id="PlaningAction"><a class="viewcode-back" href="../../scripts.html#scripts.planner.PlaningAction">[docs]</a><span class="k">class</span> <span class="nc">PlaningAction</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Class representing the Planning state of the Smach-State-Machine, which creates a set of via points between the robot position</span>
+<span class="sd">    and a target room to be pointed decided by the Reasoner State and passed to this ros node via a motion/planner action-client request</span>
+<span class="sd">    in the fsm script.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    __init__(self)</span>
+
+<span class="sd">        Initialization of parameters:</span>
+
+<span class="sd">            client:ros_action_client</span>
+<span class="sd">                Armor-Client to set-up the Ontology</span>
+<span class="sd">            as:ros_action_server</span>
+<span class="sd">                the server of the motion/planner action </span>
+<span class="sd">            _environment_size:list[]</span>
+<span class="sd">                ROS parameter containing the coordinate limits of the environment </span>
+
+<span class="sd">    execute_callback(self,goal)</span>
+
+<span class="sd">        Server Callback of the action motion/planner requested from the fsm module to start up </span>
+<span class="sd">        the via points generation action.</span>
+
+<span class="sd">        This Callback-Server simulate the robot&#39;s planning by generating a set of n poits equally spacied from a room to another. </span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PlaningAction.__init__"><a class="viewcode-back" href="../../scripts.html#scripts.planner.PlaningAction.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_environment_size</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">ENV_SIZE</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">ArmorClient</span><span class="p">(</span><span class="s1">&#39;armor_client&#39;</span><span class="p">,</span> <span class="s1">&#39;reference&#39;</span><span class="p">)</span>
+
+		<span class="c1"># Instantiate and start the action server based on the `SimpleActionServer` class.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_as</span> <span class="o">=</span> <span class="n">SimpleActionServer</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">ACTION_PLANNER</span><span class="p">,</span> 
+                                      <span class="n">PlanAction</span><span class="p">,</span> 
+                                      <span class="n">execute_cb</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">execute_callback</span><span class="p">,</span> 
+                                      <span class="n">auto_start</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># Initialize the starting room</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_room</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">START_LOC</span>
+        <span class="c1"># Define boolean variable for the battery state </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_battery_low</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="c1"># # ROS message subscriber on the topic /battery_low </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sub_battery</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Subscriber</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">TOPIC_BATTERY_LOW</span><span class="p">,</span> <span class="n">Bool</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_battery_cb</span><span class="p">)</span>
+
+        <span class="c1"># start plan action server</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_as</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_battery_cb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">battery_value</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Callback function for /battery_low topic. Stores the battery state.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># store battery state from /battery_low topic message</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_battery_low</span> <span class="o">=</span> <span class="n">battery_value</span><span class="o">.</span><span class="n">data</span>
+
+<div class="viewcode-block" id="PlaningAction.execute_callback"><a class="viewcode-back" href="../../scripts.html#scripts.planner.PlaningAction.execute_callback">[docs]</a>    <span class="k">def</span> <span class="nf">execute_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">goal</span><span class="p">):</span>
+
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">###############</span><span class="se">\n</span><span class="s1">PLANNING EXECUTION&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Get list of room coordinates from ROS parameters</span>
+        <span class="n">loc_coordinates</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;ids&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_battery_low</span><span class="p">:</span>
+
+            <span class="c1"># Wait until robot is in a room during the low battery routine </span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;BATTERY_LOW&#39;</span><span class="p">)</span>
+
+            <span class="c1"># Ontology Reasoning</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">apply_buffered_changes</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">sync_buffered_reasoner</span><span class="p">()</span>
+            <span class="c1"># Query ontology for current location of robot</span>
+            <span class="n">current_start_room</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">objectprop_b2_ind</span><span class="p">(</span><span class="s1">&#39;isIn&#39;</span><span class="p">,</span><span class="s1">&#39;Robot1&#39;</span><span class="p">)</span>
+            <span class="c1"># Format room name from ontology response</span>
+            <span class="n">current_start_room</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;#(.+?)&gt;&#39;</span><span class="p">,</span><span class="n">current_start_room</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="c1"># Loop until robot is no longer in the previous target room</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Rate</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">while</span><span class="p">(</span><span class="n">current_start_room</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_room</span><span class="p">):</span>
+
+                <span class="c1"># Ontology Reasoning</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">apply_buffered_changes</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">sync_buffered_reasoner</span><span class="p">()</span>
+                <span class="c1"># Query ontology for current location of robot</span>
+                <span class="n">current_start_room</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">objectprop_b2_ind</span><span class="p">(</span><span class="s1">&#39;isIn&#39;</span><span class="p">,</span><span class="s1">&#39;Robot1&#39;</span><span class="p">)</span>
+                <span class="c1"># Format room name from ontology response</span>
+                <span class="n">current_start_room</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;#(.+?)&gt;&#39;</span><span class="p">,</span><span class="n">current_start_room</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">r</span><span class="o">.</span><span class="n">sleep</span><span class="p">()</span>
+                
+            <span class="c1"># Check if robot is already in target room</span>
+            <span class="k">if</span> <span class="n">current_start_room</span> <span class="o">==</span> <span class="n">goal</span><span class="o">.</span><span class="n">target</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_as</span><span class="o">.</span><span class="n">set_aborted</span><span class="p">()</span>
+                <span class="k">return</span>
+
+        <span class="c1"># get the current robot location</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_room</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">objectprop_b2_ind</span><span class="p">(</span><span class="s1">&#39;isIn&#39;</span><span class="p">,</span><span class="s1">&#39;Robot1&#39;</span><span class="p">)</span>
+        <span class="c1"># format information</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_room</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;#(.+?)&gt;&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">start_room</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># mapping start_room location into coordinates</span>
+        <span class="n">start_point</span> <span class="o">=</span> <span class="n">loc_coordinates</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">start_room</span><span class="p">]</span>
+
+
+    	<span class="c1"># mapping the target location into coordinates</span>
+        <span class="n">target_point</span> <span class="o">=</span> <span class="n">loc_coordinates</span><span class="p">[</span><span class="n">goal</span><span class="o">.</span><span class="n">target</span><span class="p">]</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Start Room: &#39;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">start_room</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Target Room: &#39;</span><span class="o">+</span><span class="n">goal</span><span class="o">.</span><span class="n">target</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="n">log_msg</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Starting-Room [</span><span class="si">{</span><span class="n">start_point</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="n">start_point</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s1">] , Target-Room [</span><span class="si">{</span><span class="n">target_point</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">, &#39;</span>
+                       <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">target_point</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s1">] &#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">log_msg</span><span class="p">)</span>
+
+        <span class="c1"># check if locations are None</span>
+        <span class="k">if</span> <span class="n">start_point</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">target_point</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="n">log_msg</span> <span class="o">=</span> <span class="s1">&#39;Cannot have `None` start point nor target_point. This service will be aborted!.&#39;</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">log_msg</span><span class="p">)</span>
+            <span class="c1"># Close service by returning an `ABORT` state to the client.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_as</span><span class="o">.</span><span class="n">set_aborted</span><span class="p">()</span>
+            <span class="k">return</span>
+
+        <span class="c1"># check if locations&#39; coordinates are in the environment limit</span>
+        <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_is_valid</span><span class="p">(</span><span class="n">start_point</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_valid</span><span class="p">(</span><span class="n">target_point</span><span class="p">)):</span>
+            <span class="n">log_msg</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Start point (</span><span class="si">{</span><span class="n">start_point</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="n">start_point</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s1">) or target point (</span><span class="si">{</span><span class="n">target_point</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">, &#39;</span>
+                       <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">target_point</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s1">) point out of the environment. This service will be aborted!.&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">log_msg</span><span class="p">)</span>
+            <span class="c1"># Close service by returning an `ABORT` state to the client.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_as</span><span class="o">.</span><span class="n">set_aborted</span><span class="p">()</span>
+            <span class="k">return</span>
+
+        <span class="c1"># Initialise the `feedback` with the starting point of the plan.</span>
+        <span class="n">feedback</span> <span class="o">=</span> <span class="n">PlanFeedback</span><span class="p">()</span>
+        <span class="n">feedback</span><span class="o">.</span><span class="n">via_points</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># number of via points</span>
+        <span class="n">n_points</span> <span class="o">=</span> <span class="mi">10</span>
+
+        <span class="c1"># generate a set of n equally spaced via points</span>
+        <span class="n">points_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start_point</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">target_point</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">num</span> <span class="o">=</span> <span class="n">n_points</span><span class="p">)</span>
+        <span class="n">points_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start_point</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">target_point</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">num</span> <span class="o">=</span> <span class="n">n_points</span><span class="p">)</span>
+
+        <span class="c1"># format information</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="p">[[</span><span class="n">a</span> <span class="p">,</span> <span class="n">b</span><span class="p">]</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">points_x</span><span class="p">,</span> <span class="n">points_y</span><span class="p">)]</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;GENERATING VIA POINTS...&#39;</span><span class="p">)</span>
+
+        <span class="c1"># loop to simulated time in generating via points</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_points</span><span class="p">):</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_as</span><span class="o">.</span><span class="n">is_preempt_requested</span><span class="p">():</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Server has been cancelled by the client!&#39;</span><span class="p">)</span>
+                <span class="c1"># Actually cancel this service.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_as</span><span class="o">.</span><span class="n">set_preempted</span><span class="p">()</span>  
+                <span class="k">return</span>
+
+            <span class="c1"># create a Point struct with current location&#39;s coordinates</span>
+            <span class="n">new_point</span> <span class="o">=</span> <span class="n">Point</span><span class="p">()</span>
+            <span class="n">new_point</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">new_point</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;[&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%.2f</span><span class="s2">&quot;</span><span class="o">%</span> <span class="n">new_point</span><span class="o">.</span><span class="n">x</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;,&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%.2f</span><span class="s2">&quot;</span><span class="o">%</span> <span class="n">new_point</span><span class="o">.</span><span class="n">y</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;]&#39;</span><span class="p">)</span>
+
+            <span class="c1"># update feedback</span>
+            <span class="n">feedback</span><span class="o">.</span><span class="n">via_points</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_point</span><span class="p">)</span>
+            <span class="c1"># publish feedback</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_as</span><span class="o">.</span><span class="n">publish_feedback</span><span class="p">(</span><span class="n">feedback</span><span class="p">)</span>
+
+            <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+
+        <span class="c1"># Publish the results to the client.        </span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">PlanResult</span><span class="p">()</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">via_points</span> <span class="o">=</span> <span class="n">feedback</span><span class="o">.</span><span class="n">via_points</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_as</span><span class="o">.</span><span class="n">set_succeeded</span><span class="p">(</span><span class="n">result</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_is_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point</span><span class="p">):</span>
+        
+        <span class="c1"># return bool variable, true coordinates are in the env limits, false viceversa</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_environment_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">point</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_environment_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_environment_size</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">point</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_environment_size</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+
+    <span class="c1"># Initialise the node, its action server, and wait.    </span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">init_node</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">NODE_PLANNER</span><span class="p">,</span> <span class="n">log_level</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+    <span class="c1"># Instantiate the node manager class and wait.</span>
+    <span class="n">server</span> <span class="o">=</span> <span class="n">PlaningAction</span><span class="p">()</span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">spin</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Matteo Carlone.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

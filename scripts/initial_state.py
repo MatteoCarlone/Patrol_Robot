@@ -12,7 +12,12 @@ Service:
 Action:
     /armor_client
 
-This Node start the whole program by initializing and loading the topology.
+This Node start the whole program by
+
+    - Looking for the aruco marker
+        - orient the camera using the robot arm
+    - decode information about the environment
+    - initializing and loading the topology.
 
 """
 
@@ -67,6 +72,9 @@ class InitialState:
         the starting position of the robot, already initialized in the starting ontology, the disjoint function
         that let the reasoner understanding all the individuals and I assumed all the rooms visited at time zero 
         in order to yet start the counter for the URGENT rooms.
+
+        All the informations are retrived from aruco markers detection. Therefore the camera mounted on the robot's arm 
+        scan the surroundings by achiving different orientations. The movement of the arm is performed by a MoveIt control node.
 
     """
 

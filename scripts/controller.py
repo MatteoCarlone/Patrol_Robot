@@ -15,7 +15,7 @@ Action:
 
 
 This Node implement the controlling action that mainly consists in retrive the via points 
-from the planner node and then simulate the movement by losing time while print the via points.
+from the planner node and then move the robot sending a goal target to the move base action server.
 Once reached the final destination the current time and location associated with the robot is updated as the visited time of the room 
 for the URGENT property estimation.
 
@@ -30,7 +30,6 @@ from patrol_robot import environment as env
 import re
 import time 
 from std_msgs.msg import Bool
-
 
 import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
@@ -65,7 +64,7 @@ class ControllingAction(object):
         Server Callback of the action motion/controller requested from the fsm module to start up 
         the controlling action towards a target room.
 
-        This Callback-Server simulate the robot's movement by printing its position in time. Once the robot reach 
+        This Callback-Server move the robot by sending the goal to the move base action server. Once the robot reach 
         the target room some Ontology paramenters are updated: 
 
         * the robot location (isIn)
@@ -123,7 +122,7 @@ class ControllingAction(object):
 
         """
         Defining the client function that constructs a SimpleActionClient 
-        in order to open a connection to the ActionServer. 
+        in order to open a connection to the Move Base ActionServer. 
         This function sets some parameters of the client 
         
         """
@@ -163,7 +162,7 @@ class ControllingAction(object):
 
     def set_goal(self,x, y):
         """
-         Creates a goal and sends it to the action server. 
+         Creates a goal and sends it to the Move Base action server. 
 
         """
         self.Goal_msg.target_pose.pose.position.x = x

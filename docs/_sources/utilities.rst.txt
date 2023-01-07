@@ -1,0 +1,13 @@
+Utilities
+=========
+helper scripts of the utilities folder.
+
+Environment Helper 
+------------------
+.. automodule:: utilities.patrol_robot.environment
+   :members:
+
+Interface Helper 
+----------------
+.. automodule:: utilities.patrol_robot.helper
+   :members:

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>scripts.reasoner &mdash; Patrol_Robot 1.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Patrol_Robot
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../scripts.html">Scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../src.html">Src</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../utilities.html">Utilities</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Patrol_Robot</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">scripts.reasoner</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for scripts.reasoner</h1><div class="highlight"><pre>
+<span></span><span class="ch">#! /usr/bin/env python</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">.. module:: Reasoner</span>
+<span class="sd">    :platform: Unix</span>
+<span class="sd">    :synopsis: Python to code compute the next room to visit according to a certain protocol</span>
+
+<span class="sd">.. moduleauthor:: Matteo Carlone &lt;matteo.carlone99@gmail.com&gt;</span>
+
+<span class="sd">Service: </span>
+
+<span class="sd">    /reason</span>
+
+<span class="sd">Action:</span>
+
+<span class="sd">    /armor_client</span>
+
+
+<span class="sd">This Node implement the reasoner capable of decide the next-room to be visited by the robot.</span>
+<span class="sd">It firt retrive the position of the robot and the room it can reach, then it compute the next room giving priority to corridors,</span>
+<span class="sd">but if there&#39;s one or more URGENT rooms it will point randomly one of them.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1">#---Libraries---#</span>
+
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">import</span> <span class="nn">roslib</span>
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">import</span> <span class="nn">actionlib</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">from</span> <span class="nn">patrol_robot</span> <span class="kn">import</span> <span class="n">environment</span> <span class="k">as</span> <span class="n">env</span>
+<span class="kn">from</span> <span class="nn">armor_api.armor_client</span> <span class="kn">import</span> <span class="n">ArmorClient</span>
+<span class="kn">from</span> <span class="nn">patrol_robot.srv</span> <span class="kn">import</span> <span class="n">Reason</span> <span class="p">,</span> <span class="n">ReasonResponse</span>
+<span class="kn">from</span> <span class="nn">patrol_robot.helper</span> <span class="kn">import</span> <span class="n">InterfaceHelper</span>
+
+<span class="c1">#--------------#</span>
+
+<div class="viewcode-block" id="Reasoner"><a class="viewcode-back" href="../../scripts.html#scripts.reasoner.Reasoner">[docs]</a><span class="k">class</span> <span class="nc">Reasoner</span><span class="p">:</span>
+
+   <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing the Reasoning-State of the Smach-State-Machine, which decide the </span>
+<span class="sd">    next room to point whenever a client-request on the custom-service /reason is performed by the </span>
+<span class="sd">    finite state machine.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    __init__(self)</span>
+
+<span class="sd">        Initialization of parameters:</span>
+
+<span class="sd">            client:ros_action_client </span>
+<span class="sd">               Armor-Client to set-up the Ontology</span>
+<span class="sd">            _helper:InterfaceHelper (object)</span>
+<span class="sd">               Object define in the intefacehelper script in utilities folder</span>
+<span class="sd">            reachable_list:list[]</span>
+<span class="sd">               list of reachable rooms </span>
+<span class="sd">            urgent_list:list[]</span>
+<span class="sd">               list of urgent rooms</span>
+<span class="sd">            corridors:list[]</span>
+<span class="sd">               list of corridors</span>
+
+<span class="sd">    execute(self,request)</span>
+
+<span class="sd">        Server Callback of the /reason service requested from the fsm module to reason </span>
+<span class="sd">        on the next room to point.</span>
+
+<span class="sd">        This Callback-Server updates the position of the robot, the room that can reach, the urgent rooms (if any) and </span>
+<span class="sd">        the corridors. Then it calls the private method _next_room(self).</span>
+
+<span class="sd">    _next_room(self)</span>
+
+<span class="sd">        This private method computes the new room according to the following protocol:</span>
+
+<span class="sd">            corridor has higher prioprity than normal rooms</span>
+<span class="sd">            if there&#39;s one or more urgent rooms and the robot can reach them it will prioritize them randomly</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Reasoner.__init__"><a class="viewcode-back" href="../../scripts.html#scripts.reasoner.Reasoner.__init__">[docs]</a>   <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+      <span class="n">rospy</span><span class="o">.</span><span class="n">Service</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">SERVER_REASON</span> <span class="p">,</span> <span class="n">Reason</span> <span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">)</span>
+
+      <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">ArmorClient</span><span class="p">(</span><span class="s2">&quot;armor_client&quot;</span><span class="p">,</span> <span class="s2">&quot;reference&quot;</span><span class="p">)</span>
+
+      <span class="bp">self</span><span class="o">.</span><span class="n">P_interfacehelper</span> <span class="o">=</span> <span class="n">InterfaceHelper</span><span class="p">()</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">P_interfacehelper</span>
+
+      <span class="bp">self</span><span class="o">.</span><span class="n">reachable_list</span> <span class="o">=</span> <span class="p">[]</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">urgent_list</span> <span class="o">=</span> <span class="p">[]</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">corridors</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="Reasoner.execute"><a class="viewcode-back" href="../../scripts.html#scripts.reasoner.Reasoner.execute">[docs]</a>   <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">request</span><span class="p">):</span>
+
+      <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">###############</span><span class="se">\n</span><span class="s1">REASONING EXECUTION&#39;</span><span class="p">)</span>
+
+      <span class="c1"># reason on the ontology</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">reason</span><span class="p">()</span>
+
+      <span class="c1"># get the current robot location</span>
+      <span class="n">isin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">objectprop_b2_ind</span><span class="p">(</span><span class="s1">&#39;isIn&#39;</span><span class="p">,</span><span class="s1">&#39;Robot1&#39;</span><span class="p">)</span>
+      <span class="c1"># get the current robot time instant   </span>
+      <span class="n">now</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">dataprop_b2_ind</span><span class="p">(</span><span class="s1">&#39;now&#39;</span><span class="p">,</span><span class="s1">&#39;Robot1&#39;</span><span class="p">)</span>
+
+      <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Robot isIn: &#39;</span><span class="o">+</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;#(.+?)&gt;&#39;</span><span class="p">,</span><span class="n">isin</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; at time: &#39;</span> <span class="o">+</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;&quot;(.+?)&quot;&#39;</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">now</span><span class="p">))</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+
+      <span class="c1"># get the robot&#39;s reachable rooms</span>
+      <span class="n">can_reach</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">objectprop_b2_ind</span><span class="p">(</span><span class="s1">&#39;canReach&#39;</span><span class="p">,</span><span class="s1">&#39;Robot1&#39;</span><span class="p">)</span>
+      <span class="c1"># get the list of current urgent rooms</span>
+      <span class="n">urgent_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">ind_b2_class</span><span class="p">(</span><span class="s1">&#39;URGENT&#39;</span><span class="p">)</span>
+      <span class="c1"># get the list of Corridors</span>
+      <span class="n">corridors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">ind_b2_class</span><span class="p">(</span><span class="s1">&#39;CORRIDOR&#39;</span><span class="p">)</span>
+
+      <span class="c1"># format informations</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">reachable_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">list_formatter</span><span class="p">(</span><span class="n">can_reach</span><span class="p">,</span><span class="s1">&#39;#&#39;</span><span class="p">,</span><span class="s1">&#39;&gt;&#39;</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">urgent_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">list_formatter</span><span class="p">(</span><span class="n">urgent_list</span><span class="p">,</span><span class="s1">&#39;#&#39;</span><span class="p">,</span><span class="s1">&#39;&gt;&#39;</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">corridors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">list_formatter</span><span class="p">(</span><span class="n">corridors</span><span class="p">,</span><span class="s1">&#39;#&#39;</span><span class="p">,</span><span class="s1">&#39;&gt;&#39;</span><span class="p">)</span>
+
+      <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Robot canReach Rooms: &#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">reachable_list</span><span class="p">)</span>
+
+      <span class="c1"># compute the next room to go according with the protocol</span>
+      <span class="n">room_to_go</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_next_room</span><span class="p">()</span>
+
+      <span class="c1"># get the last time instant in which thw robot has seen the targeted room</span>
+      <span class="n">visited_at</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">dataprop_b2_ind</span><span class="p">(</span><span class="s1">&#39;visitedAt&#39;</span><span class="p">,</span><span class="n">room_to_go</span><span class="p">)</span>
+      <span class="c1"># format information</span>
+      <span class="n">visited_at</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;&quot;(.+?)&quot;&#39;</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">visited_at</span><span class="p">))</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+      <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Next Room: &#39;</span><span class="o">+</span> <span class="n">room_to_go</span> <span class="o">+</span> <span class="s1">&#39; lastly visited at time: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">visited_at</span><span class="p">))</span>
+
+      <span class="c1"># erase the list of reachable rooms</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">reachable_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+      <span class="c1"># returning the target room</span>
+      <span class="k">return</span> <span class="n">ReasonResponse</span><span class="p">(</span><span class="n">room_to_go</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Reasoner._next_room"><a class="viewcode-back" href="../../scripts.html#scripts.reasoner.Reasoner._next_room">[docs]</a>   <span class="k">def</span> <span class="nf">_next_room</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+      <span class="c1"># Implementation of the protocol giving priority to urgent rooms, </span>
+      <span class="c1">#if there&#39;s no urgent the highest prio goes to corridors.</span>
+      <span class="c1"># I do random choice if more than one room satisfies the protocol.</span>
+
+      <span class="n">RU_room</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">reachable_list</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">urgent_list</span><span class="p">]</span>
+      
+      <span class="k">if</span> <span class="ow">not</span> <span class="n">RU_room</span><span class="p">:</span>
+
+         <span class="n">RC_room</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">reachable_list</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">corridors</span><span class="p">]</span>
+         
+
+         <span class="k">if</span> <span class="ow">not</span> <span class="n">RC_room</span><span class="p">:</span>
+            <span class="n">to_point</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reachable_list</span><span class="p">)</span> 
+
+         <span class="k">else</span><span class="p">:</span>
+            <span class="n">to_point</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">RC_room</span><span class="p">)</span>
+      <span class="k">else</span><span class="p">:</span>
+        
+         <span class="n">to_point</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">RU_room</span><span class="p">)</span>
+
+      <span class="c1"># returning the target room</span>
+      <span class="k">return</span> <span class="n">to_point</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+
+   <span class="c1"># Initialize the ROS-Node  </span>
+   <span class="n">rospy</span><span class="o">.</span><span class="n">init_node</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">NODE_REASONER</span><span class="p">,</span> <span class="n">log_level</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+   <span class="c1"># Instantiate the node manager class and wait.</span>
+   <span class="n">Reasoner</span><span class="p">()</span>
+   <span class="n">rospy</span><span class="o">.</span><span class="n">spin</span><span class="p">()</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+
+   <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Matteo Carlone.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

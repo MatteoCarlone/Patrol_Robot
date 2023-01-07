@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>scripts.fsm &mdash; Patrol_Robot 1.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Patrol_Robot
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../scripts.html">Scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../src.html">Src</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../utilities.html">Utilities</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Patrol_Robot</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">scripts.fsm</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for scripts.fsm</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">.. module:: Finite_State_Machine</span>
+<span class="sd">    :platform: Unix</span>
+<span class="sd">    :synopsis: Python code that manage the SMACH finite state machine </span>
+
+<span class="sd">.. moduleauthor:: Matteo Carlone &lt;matteo.carlone99@gmail.com&gt;</span>
+
+<span class="sd">Service:</span>
+<span class="sd">    /start </span>
+<span class="sd">    /reason</span>
+<span class="sd">    /recharge</span>
+<span class="sd">Action:</span>
+<span class="sd">    /armor_client</span>
+<span class="sd">    motion/controller</span>
+<span class="sd">    motion/planner</span>
+
+<span class="sd">This Node implement the SMACH Finite-State-Machine that guide all the surveillance routine.</span>
+<span class="sd">The communication with other nodes is managed using ros-services and actions, the actual structure of the service and </span>
+<span class="sd">action client is implemented in the script helper.py in the utilities folder.</span>
+<span class="sd">two sub state machines are implemented to exploit the planning and control states while performing the movement and the recharge routine</span>
+<span class="sd">composed by a movement to the DOC-Station (Starting Room) and the actual recharging of the battery.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1">#---Libraries---#</span>
+
+<span class="kn">import</span> <span class="nn">roslib</span>
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">import</span> <span class="nn">smach</span>
+<span class="kn">import</span> <span class="nn">smach_ros</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">string</span>
+
+<span class="kn">from</span> <span class="nn">patrol_robot.helper</span> <span class="kn">import</span> <span class="n">InterfaceHelper</span>
+<span class="kn">from</span> <span class="nn">patrol_robot</span> <span class="kn">import</span> <span class="n">environment</span> <span class="k">as</span> <span class="n">env</span>
+
+<span class="c1">#--------------#</span>
+ 
+<span class="c1">#global variable describing the battery state</span>
+<span class="n">low</span> <span class="o">=</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="Initial"><a class="viewcode-back" href="../../scripts.html#scripts.fsm.Initial">[docs]</a><span class="k">class</span> <span class="nc">Initial</span><span class="p">(</span><span class="n">smach</span><span class="o">.</span><span class="n">State</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing the initial state directly connected with the script initial_state.py .</span>
+<span class="sd">    When called from the SMACH state machine a client makes a request to the server /start, and then it</span>
+<span class="sd">    busy waits the response of the finished loading of the Ontology from the server.</span>
+<span class="sd">    Every acces to the flags to be checked is protected by mutexes in order to avoid simultaneus operations </span>
+<span class="sd">    on the same varible, ROS automatically protect access to variables with mutexes.</span>
+
+<span class="sd">    First State runned when main state machine is called.</span>
+
+<span class="sd">    * Returns:</span>
+
+<span class="sd">    start:(str)</span>
+<span class="sd">        transition flag for the SMACH fsm to the reason state.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">interfacehelper</span><span class="p">):</span>
+
+        <span class="c1"># State Initialization</span>
+        <span class="n">smach</span><span class="o">.</span><span class="n">State</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                             <span class="n">outcomes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">],</span>
+                             <span class="n">input_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;initial_counter_in&#39;</span><span class="p">],</span>
+                             <span class="n">output_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;initial_counter_out&#39;</span><span class="p">])</span>
+
+        <span class="c1"># InterfaceHelper Object declaration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span> <span class="o">=</span> <span class="n">interfacehelper</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;init_fsm&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Initial.execute"><a class="viewcode-back" href="../../scripts.html#scripts.fsm.Initial.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">userdata</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initial State execution function, called by the smach state machine</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+
+        <span class="c1"># /start service client request</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">start_client</span><span class="p">()</span> 
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;req srv&#39;</span><span class="p">)</span>
+
+        <span class="c1"># looping until transition</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">():</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;initialization&#39;</span><span class="p">)</span>
+
+            <span class="c1"># acquire mutex</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+
+            <span class="k">try</span><span class="p">:</span>
+
+    			<span class="c1"># look for transition flags:</span>
+
+                <span class="c1"># transition to reasoning state</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">should_reasoning_start</span><span class="p">():</span>
+
+                    <span class="c1"># resetting states when transition occur</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
+
+                    <span class="c1"># returning the transition associated with checked flag</span>
+                    <span class="k">return</span> <span class="s1">&#39;start&#39;</span>
+
+            <span class="k">finally</span><span class="p">:</span>
+
+    			<span class="c1"># release mutex</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+
+            <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.3</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Reasoning"><a class="viewcode-back" href="../../scripts.html#scripts.fsm.Reasoning">[docs]</a><span class="k">class</span> <span class="nc">Reasoning</span><span class="p">(</span><span class="n">smach</span><span class="o">.</span><span class="n">State</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing the reasoning state directly connected with the script reason.py .</span>
+<span class="sd">    When called from the SMACH state machine a client makes a request to the server /reason, and then it</span>
+<span class="sd">    busy waits the response of the finished decision of which room will be pointed by the robot.</span>
+<span class="sd">    Every acces to the flags to be checked is protected by mutexes in order to avoid simultaneus operations </span>
+<span class="sd">    on the same varible, ROS automatically protect access to variables with mutexes.</span>
+
+<span class="sd">    * Input Transitions:</span>
+
+<span class="sd">    start:(str)</span>
+<span class="sd">        transition flag for the SMACH fsm from the initial state.</span>
+
+<span class="sd">    * Returns:</span>
+<span class="sd">    </span>
+
+<span class="sd">    reasoned:(str)</span>
+<span class="sd">        transition flag for the SMACH fsm to the moving sub-state machine.</span>
+<span class="sd">    battery_low:(str)</span>
+<span class="sd">        transition flag for the SMACH fsm to the recharge sub-state machine.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">interfacehelper</span><span class="p">):</span>
+        
+        <span class="c1"># State Initialization</span>
+        <span class="n">smach</span><span class="o">.</span><span class="n">State</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                             <span class="n">outcomes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">,</span><span class="s1">&#39;reasoned&#39;</span><span class="p">,</span><span class="s1">&#39;battery_low&#39;</span><span class="p">],</span>
+                             <span class="n">input_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;reasoning_counter_in&#39;</span><span class="p">],</span>
+                             <span class="n">output_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;reasoning_counter_out&#39;</span><span class="p">])</span>
+
+        <span class="c1"># InterfaceHelper Object declaration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span> <span class="o">=</span> <span class="n">interfacehelper</span>
+
+
+
+<div class="viewcode-block" id="Reasoning.execute"><a class="viewcode-back" href="../../scripts.html#scripts.fsm.Reasoning.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">userdata</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reasoning State execution function, called by the smach state machine.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># recall the low global variable</span>
+        <span class="k">global</span> <span class="n">low</span>
+
+        <span class="c1"># /reason service client request</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">reason_client</span><span class="p">()</span>
+
+        <span class="c1"># looping until transition</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">():</span>
+
+            <span class="c1"># acquire mutex</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+
+            <span class="k">try</span><span class="p">:</span>
+
+                <span class="c1"># look for transition flags:</span>
+
+                <span class="c1"># transition to recharge sub-state machine</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">is_battery_low</span><span class="p">():</span>
+
+                    <span class="c1"># resetting states when transition occur</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
+
+                    <span class="c1"># change global battery state </span>
+                    <span class="n">low</span> <span class="o">=</span> <span class="kc">True</span>
+
+                    <span class="c1"># returning the transition associated with checked flag</span>
+                    <span class="k">return</span> <span class="s1">&#39;battery_low&#39;</span>
+
+                <span class="c1"># transition to moving sub-state machine</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">should_pointing_start</span><span class="p">():</span>
+
+                    <span class="c1"># resetting states when transition occur</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
+
+                    <span class="c1"># returning the transition associated with checked flag</span>
+                    <span class="k">return</span> <span class="s1">&#39;reasoned&#39;</span>
+
+            <span class="k">finally</span><span class="p">:</span>
+
+                <span class="c1"># release mutex</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+
+            <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.3</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Pointing"><a class="viewcode-back" href="../../scripts.html#scripts.fsm.Pointing">[docs]</a><span class="k">class</span> <span class="nc">Pointing</span><span class="p">(</span><span class="n">smach</span><span class="o">.</span><span class="n">State</span><span class="p">):</span>
+    
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing the pointing state directly connected with the script planner.py .</span>
+<span class="sd">    When the sub-state machine moving is called from the SMACH state machine </span>
+<span class="sd">    a action-client makes a request to the action-server motion/planner, and then it</span>
+<span class="sd">    busy waits the response of the finished planning of the via-poits the robot will follow in the Controlling State.</span>
+<span class="sd">    Every acces to the flags to be checked is protected by mutexes in order to avoid simultaneus operations </span>
+<span class="sd">    on the same varible, ROS automatically protect access to variables with mutexes.</span>
+
+<span class="sd">    First State runned when the Moving sub-state machine is called.</span>
+
+<span class="sd">    * Returns:</span>
+<span class="sd">    </span>
+<span class="sd">    pointed:(str)</span>
+<span class="sd">        transition flag for the SMACH fsm to the controlling state of the moving sub-state machine.</span>
+<span class="sd">    battery_low:(str)</span>
+<span class="sd">        transition flag for the SMACH fsm to the recharge sub-state machine.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">interfacehelper</span><span class="p">):</span>
+        
+        <span class="c1"># State Initialization</span>
+        <span class="n">smach</span><span class="o">.</span><span class="n">State</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                             <span class="n">outcomes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;pointed&#39;</span><span class="p">,</span><span class="s1">&#39;battery_low&#39;</span><span class="p">],</span>
+                             <span class="n">input_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;pointing_counter_in&#39;</span><span class="p">],</span>
+                             <span class="n">output_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;pointing_counter_out&#39;</span><span class="p">])</span>
+
+        <span class="c1"># InterfaceHelper Object declaration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span> <span class="o">=</span> <span class="n">interfacehelper</span>
+
+<div class="viewcode-block" id="Pointing.execute"><a class="viewcode-back" href="../../scripts.html#scripts.fsm.Pointing.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">userdata</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Pointing State execution function, called by the smach state machine.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># recall the low global variable</span>
+        <span class="k">global</span> <span class="n">low</span>
+
+        <span class="c1"># motion/planner action client request, low variable is passed to force the robot </span>
+        <span class="c1"># to the DOC location</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">send_planner_goal</span><span class="p">(</span><span class="n">low</span><span class="p">)</span>
+
+        <span class="c1"># looping until transition</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">():</span>
+
+            <span class="c1"># acquire mutex</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+
+            <span class="k">try</span><span class="p">:</span>
+
+                <span class="c1"># look for transition flags:</span>
+
+                <span class="c1"># transition to recharge sub-state machine</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">is_battery_low</span><span class="p">():</span>
+
+                    <span class="c1"># resetting states when transition occur</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
+
+                    <span class="c1"># canceling the goal, the transition may arrive while the action is on going </span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">planner_client</span><span class="o">.</span><span class="n">cancel_goals</span><span class="p">()</span>
+
+                    <span class="c1"># change global battery state </span>
+                    <span class="n">low</span> <span class="o">=</span> <span class="kc">True</span>
+
+                    <span class="c1"># returning the transition associated with the checked flag</span>
+                    <span class="k">return</span> <span class="s1">&#39;battery_low&#39;</span>
+
+                <span class="c1"># transition to the controlling state inside the moving sub state machine </span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">planner_client</span><span class="o">.</span><span class="n">is_done</span><span class="p">():</span>
+
+                    <span class="c1"># resetting states when transition occur</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
+
+                    <span class="c1"># returning the transition associated with the checked flag</span>
+                    <span class="k">return</span> <span class="s1">&#39;pointed&#39;</span>
+
+            <span class="k">finally</span><span class="p">:</span>
+
+                <span class="c1"># release mutex</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+
+            <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.3</span><span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="Controlling"><a class="viewcode-back" href="../../scripts.html#scripts.fsm.Controlling">[docs]</a><span class="k">class</span> <span class="nc">Controlling</span><span class="p">(</span><span class="n">smach</span><span class="o">.</span><span class="n">State</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing the controlling state directly connected with the script controller.py .</span>
+<span class="sd">    When called from the SMACH state machine a action-client makes a request to the action-server motion/controller,</span>
+<span class="sd">    and then it busy waits the response of the finished movement of the robot trough the via points passed by the client </span>
+<span class="sd">    and taken from the Pointing State.</span>
+<span class="sd">    Every acces to the flags to be checked is protected by mutexes in order to avoid simultaneus operations </span>
+<span class="sd">    on the same varible, ROS automatically protect access to variables with mutexes.</span>
+
+<span class="sd">    * Input Transitions:</span>
+
+<span class="sd">    pointed:(str)</span>
+<span class="sd">        transition flag for the SMACH fsm from the Pointing state.</span>
+
+<span class="sd">    * Returns:</span>
+<span class="sd">    </span>
+<span class="sd">    reached:(str)</span>
+<span class="sd">        transition flag for the SMACH fsm that ends the Moving sub-state machine </span>
+<span class="sd">    battery_low:(str)</span>
+<span class="sd">        transition flag for the SMACH fsm to the recharge sub-state machine.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">interfacehelper</span><span class="p">):</span>
+        
+        <span class="c1"># State Initialization</span>
+        <span class="n">smach</span><span class="o">.</span><span class="n">State</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                             <span class="n">outcomes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;reached&#39;</span><span class="p">,</span><span class="s1">&#39;battery_low&#39;</span><span class="p">],</span>
+                             <span class="n">input_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;controlling_counter_in&#39;</span><span class="p">],</span>
+                             <span class="n">output_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;controlling_counter_out&#39;</span><span class="p">])</span>
+
+        <span class="c1"># InterfaceHelper Object declaration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span> <span class="o">=</span> <span class="n">interfacehelper</span>
+
+<div class="viewcode-block" id="Controlling.execute"><a class="viewcode-back" href="../../scripts.html#scripts.fsm.Controlling.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">userdata</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Controlling State execution function, called by the smach state machine </span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># recall the low global variable</span>
+        <span class="k">global</span> <span class="n">low</span>
+
+        <span class="c1"># motion/controller action client request</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">send_controller_goal</span><span class="p">()</span>
+
+        <span class="c1"># looping until transition </span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">():</span>
+
+            <span class="c1"># acquire mutex</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+
+            <span class="k">try</span><span class="p">:</span>
+
+                <span class="c1"># look for transition flags:</span>
+
+                <span class="c1"># transition to recharge sub-state machine</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">is_battery_low</span><span class="p">():</span>
+
+                    <span class="c1"># resetting states when transition occur </span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
+
+                    <span class="c1"># canceling the goal, the transition mt arrive while the action in on going </span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">controller_client</span><span class="o">.</span><span class="n">cancel_goals</span><span class="p">()</span>
+
+                    <span class="c1"># change global battery state </span>
+                    <span class="n">low</span> <span class="o">=</span> <span class="kc">True</span>
+
+                    <span class="c1"># returning the transition associated with checked flag </span>
+                    <span class="k">return</span> <span class="s1">&#39;battery_low&#39;</span>
+
+                <span class="c1"># transition that ends the moving sub-state machine </span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">controller_client</span><span class="o">.</span><span class="n">is_done</span><span class="p">():</span>    
+
+                    <span class="c1"># resetting states when transition occur</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
+
+                    <span class="c1"># returning the transition associated with the checked flag </span>
+                    <span class="k">return</span> <span class="s1">&#39;reached&#39;</span>
+
+            <span class="k">finally</span><span class="p">:</span>
+
+                <span class="c1"># release mutex</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+
+            <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.3</span><span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="Recharge"><a class="viewcode-back" href="../../scripts.html#scripts.fsm.Recharge">[docs]</a><span class="k">class</span> <span class="nc">Recharge</span><span class="p">(</span><span class="n">smach</span><span class="o">.</span><span class="n">State</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing the Recharge state directly connected with the script battery.py .</span>
+<span class="sd">    When the sub-state machine recharge is called from the SMACH state machine </span>
+<span class="sd">    a client makes a request to the server /recharge, and then it</span>
+<span class="sd">    busy waits the response of the finished recharging of the robot&#39;s battery. Since the robot can recharge the</span>
+<span class="sd">    battery only in the DOC-Statetion, if the robot is not there the fsm redirect the the state to the moving sub-state machine </span>
+<span class="sd">    nested in the recharge sub-state machine in order to force the robot to DOC before recharging.</span>
+<span class="sd">    Every acces to the flags to be checked is protected by mutexes in order to avoid simultaneus operations </span>
+<span class="sd">    on the same varible, ROS automatically protect access to variables with mutexes.</span>
+
+<span class="sd">    First State runned when the Recharge sub-state machine is called.</span>
+
+<span class="sd">    * Returns:</span>
+<span class="sd">    </span>
+<span class="sd">    battery_full:(str)</span>
+<span class="sd">        transition flag for the SMACH fsm that ends the recharge sub-state machine.</span>
+<span class="sd">    not_at_dock:(str)</span>
+<span class="sd">        transition flag for the SMACH fsm to Moving sub-state machine in order to get to the DOC-station.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">interfacehelper</span><span class="p">):</span>
+
+        <span class="c1"># State Initialization</span>
+        <span class="n">smach</span><span class="o">.</span><span class="n">State</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                             <span class="n">outcomes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;battery_full&#39;</span><span class="p">,</span><span class="s1">&#39;not_at_dock&#39;</span><span class="p">],</span>
+                             <span class="n">input_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;recharge_counter_in&#39;</span><span class="p">],</span>
+                             <span class="n">output_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;recharge_counter_out&#39;</span><span class="p">])</span>
+
+        <span class="c1"># Interface Object declaration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span> <span class="o">=</span> <span class="n">interfacehelper</span>
+
+<div class="viewcode-block" id="Recharge.execute"><a class="viewcode-back" href="../../scripts.html#scripts.fsm.Recharge.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">userdata</span><span class="p">):</span>    
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Recharging State execution function, called by the smach state machine </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># recall the low global variable        </span>
+        <span class="k">global</span> <span class="n">low</span>
+
+        <span class="c1"># reasoning on the ontology</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">reason</span><span class="p">()</span>
+
+        <span class="c1"># getting the actual robot&#39;s location </span>
+        <span class="n">isin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">objectprop_b2_ind</span><span class="p">(</span><span class="s1">&#39;isIn&#39;</span><span class="p">,</span><span class="s1">&#39;Robot1&#39;</span><span class="p">)</span>
+        <span class="n">isin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">list_formatter</span><span class="p">(</span><span class="n">isin</span><span class="p">,</span><span class="s1">&#39;#&#39;</span><span class="p">,</span><span class="s1">&#39;&gt;&#39;</span><span class="p">)</span>
+
+        <span class="c1"># check weather the robot is not in the starting location</span>
+        <span class="k">if</span> <span class="n">env</span><span class="o">.</span><span class="n">START_LOC</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">isin</span><span class="p">:</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">ROBOT in: &#39;</span><span class="p">,</span><span class="n">isin</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Not in START LOCATION, Cannot DOC</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+            <span class="c1"># retunrning transition to the moving sub-state machine nested in the recharge sub-state machine</span>
+            <span class="k">return</span> <span class="s1">&#39;not_at_dock&#39;</span>
+
+        <span class="c1"># /recharge service client request</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">recharge_client</span><span class="p">()</span>
+
+        <span class="c1"># looping until transition</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">():</span>
+
+            <span class="c1"># acquire mutex</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+
+            <span class="k">try</span><span class="p">:</span>
+
+                <span class="c1"># look for transition flags:</span>
+
+                <span class="c1"># transition that ends the recharge sub-state machine </span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">is_battery_full</span><span class="p">():</span>
+
+                    <span class="c1"># resetting states when transition occur </span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
+
+                    <span class="c1"># change global battery state</span>
+                    <span class="n">low</span> <span class="o">=</span> <span class="kc">False</span>
+
+                    <span class="c1"># returning the transition associated with the checked flag</span>
+                    <span class="k">return</span> <span class="s1">&#39;battery_full&#39;</span>
+
+            <span class="k">finally</span><span class="p">:</span>
+
+                <span class="c1"># release mutex</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+
+            <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.3</span><span class="p">)</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;fsm&#39;</span><span class="p">)</span>
+    <span class="c1"># Initialize ros-node</span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">init_node</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">NODE_FSM</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;fsm2&#39;</span><span class="p">)</span>
+    <span class="c1"># InterfaceHelper Object Initialization</span>
+    <span class="n">interfacehelper</span> <span class="o">=</span> <span class="n">InterfaceHelper</span><span class="p">()</span>
+
+    
+	<span class="c1"># Create a SMACH state machine</span>
+    <span class="n">sm_top</span> <span class="o">=</span> <span class="n">smach</span><span class="o">.</span><span class="n">StateMachine</span><span class="p">(</span><span class="n">outcomes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;fsm&#39;</span><span class="p">])</span>
+    <span class="n">sm_top</span><span class="o">.</span><span class="n">userdata</span><span class="o">.</span><span class="n">sm_counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># ------ Main State Machine ------ #</span>
+    <span class="k">with</span> <span class="n">sm_top</span><span class="p">:</span>
+        
+
+        <span class="n">smach</span><span class="o">.</span><span class="n">StateMachine</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;INITIAL&#39;</span><span class="p">,</span> <span class="n">Initial</span><span class="p">(</span><span class="n">interfacehelper</span><span class="p">),</span> 
+                               <span class="n">transitions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span><span class="s1">&#39;REASONING&#39;</span><span class="p">},</span>
+                               <span class="n">remapping</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;initial_counter_in&#39;</span><span class="p">:</span><span class="s1">&#39;sm_counter&#39;</span><span class="p">,</span> 
+                                          <span class="s1">&#39;initial_counter_out&#39;</span><span class="p">:</span><span class="s1">&#39;sm_counter&#39;</span><span class="p">})</span>
+
+        <span class="n">smach</span><span class="o">.</span><span class="n">StateMachine</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;REASONING&#39;</span><span class="p">,</span> <span class="n">Reasoning</span><span class="p">(</span><span class="n">interfacehelper</span><span class="p">),</span> 
+                               <span class="n">transitions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span><span class="s1">&#39;REASONING&#39;</span><span class="p">,</span>
+                                            <span class="s1">&#39;reasoned&#39;</span><span class="p">:</span><span class="s1">&#39;MOVING&#39;</span><span class="p">,</span>
+                                            <span class="s1">&#39;battery_low&#39;</span><span class="p">:</span><span class="s1">&#39;RECHARGE&#39;</span><span class="p">},</span>
+                               <span class="n">remapping</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;reasoning_counter_in&#39;</span><span class="p">:</span><span class="s1">&#39;sm_counter&#39;</span><span class="p">,</span> 
+                                          <span class="s1">&#39;reasoning_counter_out&#39;</span><span class="p">:</span><span class="s1">&#39;sm_counter&#39;</span><span class="p">})</span>
+
+        <span class="c1"># Create moving sub-state machine</span>
+        <span class="n">sm_sub</span> <span class="o">=</span> <span class="n">smach</span><span class="o">.</span><span class="n">StateMachine</span><span class="p">(</span><span class="n">outcomes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;exit&#39;</span><span class="p">,</span><span class="s1">&#39;low&#39;</span><span class="p">])</span>
+        <span class="n">sm_sub</span><span class="o">.</span><span class="n">userdata</span><span class="o">.</span><span class="n">sm_counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># ------ Moving Sub-State Machine ------ #</span>
+
+        <span class="k">with</span> <span class="n">sm_sub</span><span class="p">:</span>
+    
+            <span class="n">smach</span><span class="o">.</span><span class="n">StateMachine</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;POINTING&#39;</span><span class="p">,</span> <span class="n">Pointing</span><span class="p">(</span><span class="n">interfacehelper</span><span class="p">),</span> 
+    					    	   <span class="n">transitions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;pointed&#39;</span><span class="p">:</span><span class="s1">&#39;CONTROLLING&#39;</span><span class="p">,</span>
+                                                <span class="s1">&#39;battery_low&#39;</span><span class="p">:</span><span class="s1">&#39;low&#39;</span><span class="p">},</span>
+
+    					    	   <span class="n">remapping</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;pointing_counter_in&#39;</span><span class="p">:</span><span class="s1">&#39;sm_counter&#39;</span><span class="p">,</span> 
+                                              <span class="s1">&#39;pointing_counter_out&#39;</span><span class="p">:</span><span class="s1">&#39;sm_counter&#39;</span><span class="p">})</span>
+        
+            <span class="n">smach</span><span class="o">.</span><span class="n">StateMachine</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;CONTROLLING&#39;</span><span class="p">,</span> <span class="n">Controlling</span><span class="p">(</span><span class="n">interfacehelper</span><span class="p">),</span> 
+    					    	   <span class="n">transitions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;reached&#39;</span><span class="p">:</span><span class="s1">&#39;exit&#39;</span><span class="p">,</span>
+                                                <span class="s1">&#39;battery_low&#39;</span><span class="p">:</span><span class="s1">&#39;low&#39;</span><span class="p">},</span>
+
+    					    	   <span class="n">remapping</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;controlling_counter_in&#39;</span><span class="p">:</span><span class="s1">&#39;sm_counter&#39;</span><span class="p">,</span> 
+    					    				  <span class="s1">&#39;controlling_counter_out&#39;</span><span class="p">:</span><span class="s1">&#39;sm_counter&#39;</span><span class="p">})</span>
+
+        <span class="c1"># --------------------------------------- #</span>
+
+        <span class="n">smach</span><span class="o">.</span><span class="n">StateMachine</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;MOVING&#39;</span><span class="p">,</span> <span class="n">sm_sub</span><span class="p">,</span> 
+                               <span class="n">transitions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;exit&#39;</span><span class="p">:</span><span class="s1">&#39;REASONING&#39;</span><span class="p">,</span>
+                                            <span class="s1">&#39;low&#39;</span><span class="p">:</span><span class="s1">&#39;RECHARGE&#39;</span><span class="p">},</span>
+
+                               <span class="n">remapping</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;moving_counter_in&#39;</span><span class="p">:</span><span class="s1">&#39;sm_counter&#39;</span><span class="p">,</span> 
+                                          <span class="s1">&#39;moving_counter_out&#39;</span><span class="p">:</span><span class="s1">&#39;sm_counter&#39;</span><span class="p">})</span>   
+
+        <span class="c1"># Create recharge sub-state machine </span>
+        <span class="n">sm_recharge</span> <span class="o">=</span> <span class="n">smach</span><span class="o">.</span><span class="n">StateMachine</span><span class="p">(</span><span class="n">outcomes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;full&#39;</span><span class="p">])</span>
+        <span class="n">sm_recharge</span><span class="o">.</span><span class="n">userdata</span><span class="o">.</span><span class="n">sm_counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># ------ Recharge Sub-State Machine ------ #</span>
+
+        <span class="k">with</span> <span class="n">sm_recharge</span><span class="p">:</span>
+
+            <span class="n">smach</span><span class="o">.</span><span class="n">StateMachine</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;RECH_BAR&#39;</span><span class="p">,</span> <span class="n">Recharge</span><span class="p">(</span><span class="n">interfacehelper</span><span class="p">),</span> 
+                                   <span class="n">transitions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;battery_full&#39;</span><span class="p">:</span><span class="s1">&#39;full&#39;</span><span class="p">,</span>
+                                                <span class="s1">&#39;not_at_dock&#39;</span><span class="p">:</span><span class="s1">&#39;MOVE_TO_DOCK&#39;</span><span class="p">},</span>
+
+                                   <span class="n">remapping</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;bar_counter_in&#39;</span><span class="p">:</span><span class="s1">&#39;sm_counter&#39;</span><span class="p">,</span> 
+                                              <span class="s1">&#39;bar_counter_out&#39;</span><span class="p">:</span><span class="s1">&#39;sm_counter&#39;</span><span class="p">})</span>
+
+            <span class="n">smach</span><span class="o">.</span><span class="n">StateMachine</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;MOVE_TO_DOCK&#39;</span><span class="p">,</span> <span class="n">sm_sub</span><span class="p">,</span> 
+                                   <span class="n">transitions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;exit&#39;</span><span class="p">:</span><span class="s1">&#39;RECH_BAR&#39;</span><span class="p">,</span>
+                                                <span class="s1">&#39;low&#39;</span><span class="p">:</span><span class="s1">&#39;MOVE_TO_DOCK&#39;</span><span class="p">},</span>
+
+                                   <span class="n">remapping</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;moving_counter_in&#39;</span><span class="p">:</span><span class="s1">&#39;sm_counter&#39;</span><span class="p">,</span> 
+                                              <span class="s1">&#39;moving_counter_out&#39;</span><span class="p">:</span><span class="s1">&#39;sm_counter&#39;</span><span class="p">})</span>
+
+        <span class="c1"># --------------------------------------- # </span>
+
+        <span class="n">smach</span><span class="o">.</span><span class="n">StateMachine</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;RECHARGE&#39;</span><span class="p">,</span> <span class="n">sm_recharge</span><span class="p">,</span> 
+                               <span class="n">transitions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;full&#39;</span><span class="p">:</span><span class="s1">&#39;REASONING&#39;</span><span class="p">},</span>
+
+                               <span class="n">remapping</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;recharge_counter_in&#39;</span><span class="p">:</span><span class="s1">&#39;sm_counter&#39;</span><span class="p">,</span> 
+                                          <span class="s1">&#39;recharge_counter_out&#39;</span><span class="p">:</span><span class="s1">&#39;sm_counter&#39;</span><span class="p">})</span>
+
+    <span class="c1"># --------------------------------------- #</span>
+    
+    <span class="c1"># Create and start the introspection server for visualization</span>
+    <span class="n">sis</span> <span class="o">=</span> <span class="n">smach_ros</span><span class="o">.</span><span class="n">IntrospectionServer</span><span class="p">(</span><span class="s1">&#39;server_name&#39;</span><span class="p">,</span> <span class="n">sm_top</span><span class="p">,</span> <span class="s1">&#39;/SM_ROOT&#39;</span><span class="p">)</span>
+    <span class="n">sis</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="c1"># Execute the state machine</span>
+    <span class="n">outcome</span> <span class="o">=</span> <span class="n">sm_top</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+
+    <span class="c1"># Wait for ctrl-c to stop the application</span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">spin</span><span class="p">()</span>
+    <span class="n">sis</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Matteo Carlone.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -4,7 +4,6 @@
 	<rosparam param="config/environment_size"> [-10,10,-10,10] </rosparam>
 	<rosparam param="config/random_battery_time"> [120,150] </rosparam>
 
-	
 
 	<node pkg="armor" type="execute" name="armor_service" args="it.emarolab.armor.ARMORMainService"/>
 

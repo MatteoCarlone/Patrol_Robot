@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scripts &mdash; Patrol_Robot 1.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Src" href="src.html" />
+    <link rel="prev" title="Welcome to Patrol_Robot’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Patrol_Robot
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Scripts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-scripts.initial_state">Initial State Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#scripts.initial_state.InitialState"><code class="docutils literal notranslate"><span class="pre">InitialState</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#scripts.initial_state.InitialState.__init__"><code class="docutils literal notranslate"><span class="pre">InitialState.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#scripts.initial_state.InitialState.execute"><code class="docutils literal notranslate"><span class="pre">InitialState.execute()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#scripts.initial_state.InitialState.id_callback"><code class="docutils literal notranslate"><span class="pre">InitialState.id_callback()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-scripts.fsm">FSM Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#scripts.fsm.Controlling"><code class="docutils literal notranslate"><span class="pre">Controlling</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#scripts.fsm.Controlling.execute"><code class="docutils literal notranslate"><span class="pre">Controlling.execute()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#scripts.fsm.Initial"><code class="docutils literal notranslate"><span class="pre">Initial</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#scripts.fsm.Initial.execute"><code class="docutils literal notranslate"><span class="pre">Initial.execute()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#scripts.fsm.Pointing"><code class="docutils literal notranslate"><span class="pre">Pointing</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#scripts.fsm.Pointing.execute"><code class="docutils literal notranslate"><span class="pre">Pointing.execute()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#scripts.fsm.Reasoning"><code class="docutils literal notranslate"><span class="pre">Reasoning</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#scripts.fsm.Reasoning.execute"><code class="docutils literal notranslate"><span class="pre">Reasoning.execute()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#scripts.fsm.Recharge"><code class="docutils literal notranslate"><span class="pre">Recharge</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#scripts.fsm.Recharge.execute"><code class="docutils literal notranslate"><span class="pre">Recharge.execute()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-scripts.reasoner">Reasoner Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#scripts.reasoner.Reasoner"><code class="docutils literal notranslate"><span class="pre">Reasoner</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#scripts.reasoner.Reasoner.__init__"><code class="docutils literal notranslate"><span class="pre">Reasoner.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#scripts.reasoner.Reasoner.execute"><code class="docutils literal notranslate"><span class="pre">Reasoner.execute()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#scripts.reasoner.Reasoner._next_room"><code class="docutils literal notranslate"><span class="pre">Reasoner._next_room()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-scripts.battery">Battery Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#scripts.battery.Battery"><code class="docutils literal notranslate"><span class="pre">Battery</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#scripts.battery.Battery.__init__"><code class="docutils literal notranslate"><span class="pre">Battery.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#scripts.battery.Battery.execute"><code class="docutils literal notranslate"><span class="pre">Battery.execute()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#scripts.battery.Battery._printProgressBar"><code class="docutils literal notranslate"><span class="pre">Battery._printProgressBar()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#scripts.battery.Battery._random_notifier"><code class="docutils literal notranslate"><span class="pre">Battery._random_notifier()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-scripts.planner">Planner Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#scripts.planner.PlaningAction"><code class="docutils literal notranslate"><span class="pre">PlaningAction</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#scripts.planner.PlaningAction.__init__"><code class="docutils literal notranslate"><span class="pre">PlaningAction.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#scripts.planner.PlaningAction.execute_callback"><code class="docutils literal notranslate"><span class="pre">PlaningAction.execute_callback()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-scripts.controller">Controller Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#scripts.controller.ControllingAction"><code class="docutils literal notranslate"><span class="pre">ControllingAction</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#scripts.controller.ControllingAction.__init__"><code class="docutils literal notranslate"><span class="pre">ControllingAction.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#scripts.controller.ControllingAction.execute_callback"><code class="docutils literal notranslate"><span class="pre">ControllingAction.execute_callback()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#scripts.controller.ControllingAction.action_client"><code class="docutils literal notranslate"><span class="pre">ControllingAction.action_client()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#scripts.controller.ControllingAction.active_cb"><code class="docutils literal notranslate"><span class="pre">ControllingAction.active_cb()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#scripts.controller.ControllingAction.done_cb"><code class="docutils literal notranslate"><span class="pre">ControllingAction.done_cb()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#scripts.controller.ControllingAction.set_goal"><code class="docutils literal notranslate"><span class="pre">ControllingAction.set_goal()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="src.html">Src</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Patrol_Robot</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">Scripts</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/scripts.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="scripts">
+<h1>Scripts<a class="headerlink" href="#scripts" title="Permalink to this heading"></a></h1>
+<p>Ros-Nodes of the scripts folder.</p>
+<div class="section" id="module-scripts.initial_state">
+<span id="initial-state-module"></span><h2>Initial State Module<a class="headerlink" href="#module-scripts.initial_state" title="Permalink to this heading"></a></h2>
+<span class="target" id="module-initial_state"></span><dl class="simple">
+<dt>Service:</dt><dd><p>/start</p>
+</dd>
+<dt>Action:</dt><dd><p>/armor_client</p>
+</dd>
+</dl>
+<p>This Node start the whole program by</p>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="simple">
+<dt>Looking for the aruco marker</dt><dd><ul>
+<li><p>orient the camera using the robot arm</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>decode information about the environment</p></li>
+<li><p>initializing and loading the topology.</p></li>
+</ul>
+</div></blockquote>
+<dl class="py class">
+<dt class="sig sig-object py" id="scripts.initial_state.InitialState">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scripts.initial_state.</span></span><span class="sig-name descname"><span class="pre">InitialState</span></span><a class="reference internal" href="_modules/scripts/initial_state.html#InitialState"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.initial_state.InitialState" title="Permalink to this definition"></a></dt>
+<dd><p>Class representing the Initial-State of the Smach-State-Machine, which load the
+Ontology initialized with the environment description, and starting point of the Robot.
+…</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.initial_state.InitialState.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/initial_state.html#InitialState.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.initial_state.InitialState.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Initialization of parameters:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>client:ros_action_client</dt><dd><p>Armor-Client to set-up the Ontology</p>
+</dd>
+<dt>path:str</dt><dd><p>The Ontology folder-path to load</p>
+</dd>
+<dt>server:ros_server</dt><dd><p>the server of the Empty service /start with Callback execute()</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.initial_state.InitialState.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/initial_state.html#InitialState.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.initial_state.InitialState.execute" title="Permalink to this definition"></a></dt>
+<dd><p>Server Callback of the /start service requested from the fsm module to start up
+the whole program.</p>
+<p>This Callback-Server load the ontology, set all the room of the environment with the respective doors,
+the starting position of the robot, already initialized in the starting ontology, the disjoint function
+that let the reasoner understanding all the individuals and I assumed all the rooms visited at time zero
+in order to yet start the counter for the URGENT rooms.</p>
+<p>All the informations are retrived from aruco markers detection. Therefore the camera mounted on the robot’s arm
+scan the surroundings by achiving different orientations. The movement of the arm is performed by a MoveIt control node.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.initial_state.InitialState.id_callback">
+<span class="sig-name descname"><span class="pre">id_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/initial_state.html#InitialState.id_callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.initial_state.InitialState.id_callback" title="Permalink to this definition"></a></dt>
+<dd><p>Callback of the ROS message on the topic /aruco_detector/id
+to retrive codes from aruco markers and stuck them in a list</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-scripts.fsm">
+<span id="fsm-module"></span><h2>FSM Module<a class="headerlink" href="#module-scripts.fsm" title="Permalink to this heading"></a></h2>
+<span class="target" id="module-Finite_State_Machine"></span><dl class="simple">
+<dt>Service:</dt><dd><p>/start
+/reason
+/recharge</p>
+</dd>
+<dt>Action:</dt><dd><p>/armor_client
+motion/controller
+motion/planner</p>
+</dd>
+</dl>
+<p>This Node implement the SMACH Finite-State-Machine that guide all the surveillance routine.
+The communication with other nodes is managed using ros-services and actions, the actual structure of the service and
+action client is implemented in the script helper.py in the utilities folder.
+two sub state machines are implemented to exploit the planning and control states while performing the movement and the recharge routine
+composed by a movement to the DOC-Station (Starting Room) and the actual recharging of the battery.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="scripts.fsm.Controlling">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scripts.fsm.</span></span><span class="sig-name descname"><span class="pre">Controlling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interfacehelper</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/fsm.html#Controlling"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.fsm.Controlling" title="Permalink to this definition"></a></dt>
+<dd><p>Class representing the controlling state directly connected with the script controller.py .
+When called from the SMACH state machine a action-client makes a request to the action-server motion/controller,
+and then it busy waits the response of the finished movement of the robot trough the via points passed by the client
+and taken from the Pointing State.
+Every acces to the flags to be checked is protected by mutexes in order to avoid simultaneus operations
+on the same varible, ROS automatically protect access to variables with mutexes.</p>
+<ul class="simple">
+<li><p>Input Transitions:</p></li>
+</ul>
+<dl class="simple">
+<dt>pointed:(str)</dt><dd><p>transition flag for the SMACH fsm from the Pointing state.</p>
+</dd>
+</dl>
+<ul class="simple">
+<li><p>Returns:</p></li>
+</ul>
+<dl class="simple">
+<dt>reached:(str)</dt><dd><p>transition flag for the SMACH fsm that ends the Moving sub-state machine</p>
+</dd>
+<dt>battery_low:(str)</dt><dd><p>transition flag for the SMACH fsm to the recharge sub-state machine.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.fsm.Controlling.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">userdata</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/fsm.html#Controlling.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.fsm.Controlling.execute" title="Permalink to this definition"></a></dt>
+<dd><p>Controlling State execution function, called by the smach state machine</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="scripts.fsm.Initial">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scripts.fsm.</span></span><span class="sig-name descname"><span class="pre">Initial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interfacehelper</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/fsm.html#Initial"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.fsm.Initial" title="Permalink to this definition"></a></dt>
+<dd><p>Class representing the initial state directly connected with the script initial_state.py .
+When called from the SMACH state machine a client makes a request to the server /start, and then it
+busy waits the response of the finished loading of the Ontology from the server.
+Every acces to the flags to be checked is protected by mutexes in order to avoid simultaneus operations
+on the same varible, ROS automatically protect access to variables with mutexes.</p>
+<p>First State runned when main state machine is called.</p>
+<ul class="simple">
+<li><p>Returns:</p></li>
+</ul>
+<dl class="simple">
+<dt>start:(str)</dt><dd><p>transition flag for the SMACH fsm to the reason state.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.fsm.Initial.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">userdata</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/fsm.html#Initial.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.fsm.Initial.execute" title="Permalink to this definition"></a></dt>
+<dd><p>Initial State execution function, called by the smach state machine</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="scripts.fsm.Pointing">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scripts.fsm.</span></span><span class="sig-name descname"><span class="pre">Pointing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interfacehelper</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/fsm.html#Pointing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.fsm.Pointing" title="Permalink to this definition"></a></dt>
+<dd><p>Class representing the pointing state directly connected with the script planner.py .
+When the sub-state machine moving is called from the SMACH state machine
+a action-client makes a request to the action-server motion/planner, and then it
+busy waits the response of the finished planning of the via-poits the robot will follow in the Controlling State.
+Every acces to the flags to be checked is protected by mutexes in order to avoid simultaneus operations
+on the same varible, ROS automatically protect access to variables with mutexes.</p>
+<p>First State runned when the Moving sub-state machine is called.</p>
+<ul class="simple">
+<li><p>Returns:</p></li>
+</ul>
+<dl class="simple">
+<dt>pointed:(str)</dt><dd><p>transition flag for the SMACH fsm to the controlling state of the moving sub-state machine.</p>
+</dd>
+<dt>battery_low:(str)</dt><dd><p>transition flag for the SMACH fsm to the recharge sub-state machine.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.fsm.Pointing.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">userdata</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/fsm.html#Pointing.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.fsm.Pointing.execute" title="Permalink to this definition"></a></dt>
+<dd><p>Pointing State execution function, called by the smach state machine.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="scripts.fsm.Reasoning">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scripts.fsm.</span></span><span class="sig-name descname"><span class="pre">Reasoning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interfacehelper</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/fsm.html#Reasoning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.fsm.Reasoning" title="Permalink to this definition"></a></dt>
+<dd><p>Class representing the reasoning state directly connected with the script reason.py .
+When called from the SMACH state machine a client makes a request to the server /reason, and then it
+busy waits the response of the finished decision of which room will be pointed by the robot.
+Every acces to the flags to be checked is protected by mutexes in order to avoid simultaneus operations
+on the same varible, ROS automatically protect access to variables with mutexes.</p>
+<ul class="simple">
+<li><p>Input Transitions:</p></li>
+</ul>
+<dl class="simple">
+<dt>start:(str)</dt><dd><p>transition flag for the SMACH fsm from the initial state.</p>
+</dd>
+</dl>
+<ul class="simple">
+<li><p>Returns:</p></li>
+</ul>
+<dl class="simple">
+<dt>reasoned:(str)</dt><dd><p>transition flag for the SMACH fsm to the moving sub-state machine.</p>
+</dd>
+<dt>battery_low:(str)</dt><dd><p>transition flag for the SMACH fsm to the recharge sub-state machine.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.fsm.Reasoning.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">userdata</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/fsm.html#Reasoning.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.fsm.Reasoning.execute" title="Permalink to this definition"></a></dt>
+<dd><p>Reasoning State execution function, called by the smach state machine.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="scripts.fsm.Recharge">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scripts.fsm.</span></span><span class="sig-name descname"><span class="pre">Recharge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interfacehelper</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/fsm.html#Recharge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.fsm.Recharge" title="Permalink to this definition"></a></dt>
+<dd><p>Class representing the Recharge state directly connected with the script battery.py .
+When the sub-state machine recharge is called from the SMACH state machine
+a client makes a request to the server /recharge, and then it
+busy waits the response of the finished recharging of the robot’s battery. Since the robot can recharge the
+battery only in the DOC-Statetion, if the robot is not there the fsm redirect the the state to the moving sub-state machine
+nested in the recharge sub-state machine in order to force the robot to DOC before recharging.
+Every acces to the flags to be checked is protected by mutexes in order to avoid simultaneus operations
+on the same varible, ROS automatically protect access to variables with mutexes.</p>
+<p>First State runned when the Recharge sub-state machine is called.</p>
+<ul class="simple">
+<li><p>Returns:</p></li>
+</ul>
+<dl class="simple">
+<dt>battery_full:(str)</dt><dd><p>transition flag for the SMACH fsm that ends the recharge sub-state machine.</p>
+</dd>
+<dt>not_at_dock:(str)</dt><dd><p>transition flag for the SMACH fsm to Moving sub-state machine in order to get to the DOC-station.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.fsm.Recharge.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">userdata</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/fsm.html#Recharge.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.fsm.Recharge.execute" title="Permalink to this definition"></a></dt>
+<dd><p>Recharging State execution function, called by the smach state machine</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-scripts.reasoner">
+<span id="reasoner-module"></span><h2>Reasoner Module<a class="headerlink" href="#module-scripts.reasoner" title="Permalink to this heading"></a></h2>
+<span class="target" id="module-Reasoner"></span><p>Service:</p>
+<blockquote>
+<div><p>/reason</p>
+</div></blockquote>
+<p>Action:</p>
+<blockquote>
+<div><p>/armor_client</p>
+</div></blockquote>
+<p>This Node implement the reasoner capable of decide the next-room to be visited by the robot.
+It firt retrive the position of the robot and the room it can reach, then it compute the next room giving priority to corridors,
+but if there’s one or more URGENT rooms it will point randomly one of them.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="scripts.reasoner.Reasoner">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scripts.reasoner.</span></span><span class="sig-name descname"><span class="pre">Reasoner</span></span><a class="reference internal" href="_modules/scripts/reasoner.html#Reasoner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.reasoner.Reasoner" title="Permalink to this definition"></a></dt>
+<dd><p>Class representing the Reasoning-State of the Smach-State-Machine, which decide the
+next room to point whenever a client-request on the custom-service /reason is performed by the
+finite state machine.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.reasoner.Reasoner.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/reasoner.html#Reasoner.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.reasoner.Reasoner.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Initialization of parameters:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>client:ros_action_client</dt><dd><p>Armor-Client to set-up the Ontology</p>
+</dd>
+<dt>_helper:InterfaceHelper (object)</dt><dd><p>Object define in the intefacehelper script in utilities folder</p>
+</dd>
+<dt>reachable_list:list[]</dt><dd><p>list of reachable rooms</p>
+</dd>
+<dt>urgent_list:list[]</dt><dd><p>list of urgent rooms</p>
+</dd>
+<dt>corridors:list[]</dt><dd><p>list of corridors</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.reasoner.Reasoner.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/reasoner.html#Reasoner.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.reasoner.Reasoner.execute" title="Permalink to this definition"></a></dt>
+<dd><p>Server Callback of the /reason service requested from the fsm module to reason
+on the next room to point.</p>
+<p>This Callback-Server updates the position of the robot, the room that can reach, the urgent rooms (if any) and
+the corridors. Then it calls the private method _next_room(self).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.reasoner.Reasoner._next_room">
+<span class="sig-name descname"><span class="pre">_next_room</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/reasoner.html#Reasoner._next_room"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.reasoner.Reasoner._next_room" title="Permalink to this definition"></a></dt>
+<dd><p>This private method computes the new room according to the following protocol:</p>
+<blockquote>
+<div><p>corridor has higher prioprity than normal rooms
+if there’s one or more urgent rooms and the robot can reach them it will prioritize them randomly</p>
+</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-scripts.battery">
+<span id="battery-module"></span><h2>Battery Module<a class="headerlink" href="#module-scripts.battery" title="Permalink to this heading"></a></h2>
+<span class="target" id="module-Battery"></span><p>Service:</p>
+<blockquote>
+<div><p>/reason</p>
+</div></blockquote>
+<p>Action:</p>
+<blockquote>
+<div><p>/armor_client</p>
+</div></blockquote>
+<p>This Node implement the recharging bar visible at screen that starts whenever the robot battery is low and it
+is in the DOC-Station (Starting Room). In addition to this, in a new thread, a random notifier simulate the decrease of the robot’s
+battery while moving in the environment.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="scripts.battery.Battery">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scripts.battery.</span></span><span class="sig-name descname"><span class="pre">Battery</span></span><a class="reference internal" href="_modules/scripts/battery.html#Battery"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.battery.Battery" title="Permalink to this definition"></a></dt>
+<dd><p>Class representing the Robot’s battery, it mainly has two functions a random alarm that notifies that the battery is low
+and need a recharge, a loading bar visible on screen that simulates the recharging action at the DOC-station.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.battery.Battery.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/battery.html#Battery.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.battery.Battery.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Initialization of parameters:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>server:ros_server</dt><dd><p>the server of the Empty service /recharge with Callback execute()</p>
+</dd>
+<dt>_helper:InterfaceHelper (object)</dt><dd><p>Object define in the intefacehelper script in utilities folder</p>
+</dd>
+<dt>_battery_low:Bool</dt><dd><p>variable that represent the state of the battery</p>
+</dd>
+<dt>_random_battery_time:list[]</dt><dd><p>ROS parameter containing the interval of seconds in which the random notifier works</p>
+</dd>
+<dt>th:thread</dt><dd><p>the thread in which the random notifier works</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.battery.Battery.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/battery.html#Battery.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.battery.Battery.execute" title="Permalink to this definition"></a></dt>
+<dd><p>Server Callback of the /recharge service requested from the fsm module when the battery has to be rehcarged.</p>
+<p>This Callback-Server calls the private method _printProgressBar(…) that simulates the recharging action.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.battery.Battery._printProgressBar">
+<span class="sig-name descname"><span class="pre">_printProgressBar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iteration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decimals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'¦'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">printEnd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'backslash</span> <span class="pre">r'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/battery.html#Battery._printProgressBar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.battery.Battery._printProgressBar" title="Permalink to this definition"></a></dt>
+<dd><p>Call in a loop to create terminal progress bar</p>
+<p>Parameters:</p>
+<blockquote>
+<div><p>iteration - Required  : current iteration (Int)</p>
+<p>total - Required  : total iterations (Int)</p>
+<p>prefix - Optional  : prefix string (Str)</p>
+<p>suffix - Optional  : suffix string (Str)</p>
+<p>decimals - Optional  : positive number of decimals in percent complete (Int)</p>
+<p>length - Optional  : character length of bar (Int)</p>
+<p>fill - Optional  : bar fill character (Str)</p>
+<p>printEnd - Optional  : end character (e.g. “backslash r”, “backslash n”) (Str)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.battery.Battery._random_notifier">
+<span class="sig-name descname"><span class="pre">_random_notifier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/battery.html#Battery._random_notifier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.battery.Battery._random_notifier" title="Permalink to this definition"></a></dt>
+<dd><p>This method executes in another thread and basically simulate the randomness dreasing of the robot’s battery.
+It publishes the state of the battery on the state/battery_low topic (Bool ROS message)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-scripts.planner">
+<span id="planner-module"></span><h2>Planner Module<a class="headerlink" href="#module-scripts.planner" title="Permalink to this heading"></a></h2>
+<span class="target" id="module-Planner"></span><p>Action:</p>
+<blockquote>
+<div><p>/armor_client
+motion/planner</p>
+</div></blockquote>
+<p>This Node implement the planning action of creating a set of via points between a room to another.
+Those via points will be then passed to the Controlling node to perform the actual movement.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="scripts.planner.PlaningAction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scripts.planner.</span></span><span class="sig-name descname"><span class="pre">PlaningAction</span></span><a class="reference internal" href="_modules/scripts/planner.html#PlaningAction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.planner.PlaningAction" title="Permalink to this definition"></a></dt>
+<dd><p>Class representing the Planning state of the Smach-State-Machine, which creates a set of via points between the robot position
+and a target room to be pointed decided by the Reasoner State and passed to this ros node via a motion/planner action-client request
+in the fsm script.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.planner.PlaningAction.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/planner.html#PlaningAction.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.planner.PlaningAction.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Initialization of parameters:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>client:ros_action_client</dt><dd><p>Armor-Client to set-up the Ontology</p>
+</dd>
+<dt>as:ros_action_server</dt><dd><p>the server of the motion/planner action</p>
+</dd>
+<dt>_environment_size:list[]</dt><dd><p>ROS parameter containing the coordinate limits of the environment</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.planner.PlaningAction.execute_callback">
+<span class="sig-name descname"><span class="pre">execute_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">goal</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/planner.html#PlaningAction.execute_callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.planner.PlaningAction.execute_callback" title="Permalink to this definition"></a></dt>
+<dd><p>Server Callback of the action motion/planner requested from the fsm module to start up
+the via points generation action.</p>
+<p>This Callback-Server simulate the robot’s planning by generating a set of n poits equally spacied from a room to another.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-scripts.controller">
+<span id="controller-module"></span><h2>Controller Module<a class="headerlink" href="#module-scripts.controller" title="Permalink to this heading"></a></h2>
+<span class="target" id="module-Controller"></span><p>Action:</p>
+<blockquote>
+<div><p>/armor_client
+motion/controller</p>
+</div></blockquote>
+<p>This Node implement the controlling action that mainly consists in retrive the via points
+from the planner node and then move the robot sending a goal target to the move base action server.
+Once reached the final destination the current time and location associated with the robot is updated as the visited time of the room
+for the URGENT property estimation.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="scripts.controller.ControllingAction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scripts.controller.</span></span><span class="sig-name descname"><span class="pre">ControllingAction</span></span><a class="reference internal" href="_modules/scripts/controller.html#ControllingAction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.controller.ControllingAction" title="Permalink to this definition"></a></dt>
+<dd><p>Class representing the Controlling state of the Smach-State-Machine, which manage the robot’s motion trough
+via poits sent by request from the action-client motion/controller in the fsm script.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.controller.ControllingAction.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/controller.html#ControllingAction.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.controller.ControllingAction.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Initialization of parameters:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>client:ros_action_client</dt><dd><p>Armor-Client to set-up the Ontology</p>
+</dd>
+<dt>as:ros_action_server</dt><dd><p>the server of the motion/controller action</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.controller.ControllingAction.execute_callback">
+<span class="sig-name descname"><span class="pre">execute_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">goal</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/controller.html#ControllingAction.execute_callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.controller.ControllingAction.execute_callback" title="Permalink to this definition"></a></dt>
+<dd><p>Server Callback of the action motion/controller requested from the fsm module to start up
+the controlling action towards a target room.</p>
+<p>This Callback-Server move the robot by sending the goal to the move base action server. Once the robot reach
+the target room some Ontology paramenters are updated:</p>
+<ul class="simple">
+<li><p>the robot location (isIn)</p></li>
+<li><p>the time related to the robot (now)</p></li>
+<li><p>the time in which the new target room is visited (visitedAt)</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.controller.ControllingAction.action_client">
+<span class="sig-name descname"><span class="pre">action_client</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/controller.html#ControllingAction.action_client"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.controller.ControllingAction.action_client" title="Permalink to this definition"></a></dt>
+<dd><p>Defining the client function that constructs a SimpleActionClient
+in order to open a connection to the Move Base ActionServer.
+This function sets some parameters of the client</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.controller.ControllingAction.active_cb">
+<span class="sig-name descname"><span class="pre">active_cb</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/controller.html#ControllingAction.active_cb"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.controller.ControllingAction.active_cb" title="Permalink to this definition"></a></dt>
+<dd><p>No-parameter callback that gets called on transitions to Active.
+This function is called before the goal is processed</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.controller.ControllingAction.done_cb">
+<span class="sig-name descname"><span class="pre">done_cb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">status</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/controller.html#ControllingAction.done_cb"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.controller.ControllingAction.done_cb" title="Permalink to this definition"></a></dt>
+<dd><p>Callback that gets called on transitions to Done.
+The callback should take two parameters: the terminal state (as an integer from actionlib_msgs/GoalStatus) and the result.
+This Function is called after a goal is processed.
+It is used to notify the client of the current status of every goal in the system.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.controller.ControllingAction.set_goal">
+<span class="sig-name descname"><span class="pre">set_goal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/controller.html#ControllingAction.set_goal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.controller.ControllingAction.set_goal" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a goal and sends it to the Move Base action server.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to Patrol_Robot’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="src.html" class="btn btn-neutral float-right" title="Src" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Matteo Carlone.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

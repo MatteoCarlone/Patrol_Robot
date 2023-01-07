@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Utilities &mdash; Patrol_Robot 1.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Src" href="src.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Patrol_Robot
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src.html">Src</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Utilities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-utilities.patrol_robot.environment">Environment Helper</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#utilities.patrol_robot.environment.Map_C"><code class="docutils literal notranslate"><span class="pre">Map_C</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#utilities.patrol_robot.environment.RND_BATTERY_TIME"><code class="docutils literal notranslate"><span class="pre">RND_BATTERY_TIME</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-utilities.patrol_robot.helper">Interface Helper</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#utilities.patrol_robot.helper.InterfaceHelper"><code class="docutils literal notranslate"><span class="pre">InterfaceHelper</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#utilities.patrol_robot.helper.InterfaceHelper.__init__"><code class="docutils literal notranslate"><span class="pre">InterfaceHelper.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#utilities.patrol_robot.helper.InterfaceHelper.reset_states"><code class="docutils literal notranslate"><span class="pre">InterfaceHelper.reset_states()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#utilities.patrol_robot.helper.InterfaceHelper.start_client"><code class="docutils literal notranslate"><span class="pre">InterfaceHelper.start_client()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#utilities.patrol_robot.helper.InterfaceHelper.reason_client"><code class="docutils literal notranslate"><span class="pre">InterfaceHelper.reason_client()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#utilities.patrol_robot.helper.InterfaceHelper.recharge_client"><code class="docutils literal notranslate"><span class="pre">InterfaceHelper.recharge_client()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#utilities.patrol_robot.helper.InterfaceHelper._battery_cb"><code class="docutils literal notranslate"><span class="pre">InterfaceHelper._battery_cb()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#utilities.patrol_robot.helper.InterfaceHelper.send_planner_goal"><code class="docutils literal notranslate"><span class="pre">InterfaceHelper.send_planner_goal()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#utilities.patrol_robot.helper.InterfaceHelper.send_controller_goal"><code class="docutils literal notranslate"><span class="pre">InterfaceHelper.send_controller_goal()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#utilities.patrol_robot.helper.InterfaceHelper.is_battery_full"><code class="docutils literal notranslate"><span class="pre">InterfaceHelper.is_battery_full()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#utilities.patrol_robot.helper.InterfaceHelper.is_battery_low"><code class="docutils literal notranslate"><span class="pre">InterfaceHelper.is_battery_low()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#utilities.patrol_robot.helper.InterfaceHelper.should_reasoning_start"><code class="docutils literal notranslate"><span class="pre">InterfaceHelper.should_reasoning_start()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#utilities.patrol_robot.helper.InterfaceHelper.should_pointing_start"><code class="docutils literal notranslate"><span class="pre">InterfaceHelper.should_pointing_start()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#utilities.patrol_robot.helper.InterfaceHelper.reason"><code class="docutils literal notranslate"><span class="pre">InterfaceHelper.reason()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#utilities.patrol_robot.helper.InterfaceHelper.list_formatter"><code class="docutils literal notranslate"><span class="pre">InterfaceHelper.list_formatter()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Patrol_Robot</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">Utilities</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/utilities.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="utilities">
+<h1>Utilities<a class="headerlink" href="#utilities" title="Permalink to this heading"></a></h1>
+<p>helper scripts of the utilities folder.</p>
+<div class="section" id="module-utilities.patrol_robot.environment">
+<span id="environment-helper"></span><h2>Environment Helper<a class="headerlink" href="#module-utilities.patrol_robot.environment" title="Permalink to this heading"></a></h2>
+<span class="target" id="module-Environment"></span><p>This helper module contains many static variables that are used and shared by all the nodes in the script section.</p>
+<dl class="py data">
+<dt class="sig sig-object py" id="utilities.patrol_robot.environment.Map_C">
+<span class="sig-prename descclassname"><span class="pre">utilities.patrol_robot.environment.</span></span><span class="sig-name descname"><span class="pre">Map_C</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'-1.0,2.0':</span> <span class="pre">'C2',</span> <span class="pre">'-2.0,1.0':</span> <span class="pre">'R3',</span> <span class="pre">'-2.0,3.0':</span> <span class="pre">'R4',</span> <span class="pre">'0.0,0.0':</span> <span class="pre">'E',</span> <span class="pre">'1.0,2.0':</span> <span class="pre">'C1',</span> <span class="pre">'2.0,1.0':</span> <span class="pre">'R1',</span> <span class="pre">'2.0,3.0':</span> <span class="pre">'R2'}</span></em><a class="headerlink" href="#utilities.patrol_robot.environment.Map_C" title="Permalink to this definition"></a></dt>
+<dd><p>ROS parameters for the environment size and time interval for the random battery notifier function in the battery.py script.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="utilities.patrol_robot.environment.RND_BATTERY_TIME">
+<span class="sig-prename descclassname"><span class="pre">utilities.patrol_robot.environment.</span></span><span class="sig-name descname"><span class="pre">RND_BATTERY_TIME</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'config/random_battery_time'</span></em><a class="headerlink" href="#utilities.patrol_robot.environment.RND_BATTERY_TIME" title="Permalink to this definition"></a></dt>
+<dd><p>Declaration of ROS-Node names, ROS-Service names and ROS-Action names</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-utilities.patrol_robot.helper">
+<span id="interface-helper"></span><h2>Interface Helper<a class="headerlink" href="#module-utilities.patrol_robot.helper" title="Permalink to this heading"></a></h2>
+<span class="target" id="module-Helper"></span><p>This Module implements specific methods necessary for many program funcionalities:</p>
+<ul class="simple">
+<li><p>ROS service-clients</p></li>
+<li><p>ROS action-clients</p></li>
+<li><p>ROS messages Callbacks</p></li>
+<li><p>Functions to return the FSM transition states</p></li>
+<li><p>Other generic functions used in more than one script</p></li>
+</ul>
+<dl class="py class">
+<dt class="sig sig-object py" id="utilities.patrol_robot.helper.InterfaceHelper">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utilities.patrol_robot.helper.</span></span><span class="sig-name descname"><span class="pre">InterfaceHelper</span></span><a class="reference internal" href="_modules/utilities/patrol_robot/helper.html#InterfaceHelper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utilities.patrol_robot.helper.InterfaceHelper" title="Permalink to this definition"></a></dt>
+<dd><p>Class representing the Helper Object comprehensive of every necessary methods summarized above.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="utilities.patrol_robot.helper.InterfaceHelper.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utilities/patrol_robot/helper.html#InterfaceHelper.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utilities.patrol_robot.helper.InterfaceHelper.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Initialization of parameters:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>mutex:Lock()</dt><dd><p>mutex to protected variable access</p>
+</dd>
+<dt>client:ros_action_client</dt><dd><p>Armor-Client to set-up the Ontology</p>
+</dd>
+<dt>planner_client:ros_action_client</dt><dd><p>the client of the motion/planner action</p>
+</dd>
+<dt>controller_client:ros_action_client</dt><dd><p>the client of the motion/controller action</p>
+</dd>
+<dt>sub_battery:ros_msg_subscriber</dt><dd><p>subscriber to the ros message regarding the battery state , topic: state/battery_low</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utilities.patrol_robot.helper.InterfaceHelper.reset_states">
+<span class="sig-name descname"><span class="pre">reset_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utilities/patrol_robot/helper.html#InterfaceHelper.reset_states"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utilities.patrol_robot.helper.InterfaceHelper.reset_states" title="Permalink to this definition"></a></dt>
+<dd><p>Method that resets every FSM transition to False.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utilities.patrol_robot.helper.InterfaceHelper.start_client">
+<span class="sig-name descname"><span class="pre">start_client</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utilities/patrol_robot/helper.html#InterfaceHelper.start_client"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utilities.patrol_robot.helper.InterfaceHelper.start_client" title="Permalink to this definition"></a></dt>
+<dd><p>Simple client of the Empty service /start to load and initialize the Ontology</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utilities.patrol_robot.helper.InterfaceHelper.reason_client">
+<span class="sig-name descname"><span class="pre">reason_client</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utilities/patrol_robot/helper.html#InterfaceHelper.reason_client"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utilities.patrol_robot.helper.InterfaceHelper.reason_client" title="Permalink to this definition"></a></dt>
+<dd><p>Simple client of the custom service /reason to decide which room should be pointed,
+the target room is saved in a variable to be further used in the Planning request.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utilities.patrol_robot.helper.InterfaceHelper.recharge_client">
+<span class="sig-name descname"><span class="pre">recharge_client</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utilities/patrol_robot/helper.html#InterfaceHelper.recharge_client"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utilities.patrol_robot.helper.InterfaceHelper.recharge_client" title="Permalink to this definition"></a></dt>
+<dd><p>Simple client of the empty service /recharge to start the robot’s battery charging.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utilities.patrol_robot.helper.InterfaceHelper._battery_cb">
+<span class="sig-name descname"><span class="pre">_battery_cb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">battery_value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utilities/patrol_robot/helper.html#InterfaceHelper._battery_cb"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utilities.patrol_robot.helper.InterfaceHelper._battery_cb" title="Permalink to this definition"></a></dt>
+<dd><p>Callback of the ros message that describes the battery states on the topic state/battery_low,
+the value is simply stored in a variable to be checked from the FSM.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utilities.patrol_robot.helper.InterfaceHelper.send_planner_goal">
+<span class="sig-name descname"><span class="pre">send_planner_goal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utilities/patrol_robot/helper.html#InterfaceHelper.send_planner_goal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utilities.patrol_robot.helper.InterfaceHelper.send_planner_goal" title="Permalink to this definition"></a></dt>
+<dd><p>motion/planner Action Client, it sends the target location to the server in order to
+generate the correct set of via points, it takes into account the state of the battery in the argument (low)
+to force the robot the the DOC location whenever the battery is low and the robot can reach this desired location.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utilities.patrol_robot.helper.InterfaceHelper.send_controller_goal">
+<span class="sig-name descname"><span class="pre">send_controller_goal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utilities/patrol_robot/helper.html#InterfaceHelper.send_controller_goal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utilities.patrol_robot.helper.InterfaceHelper.send_controller_goal" title="Permalink to this definition"></a></dt>
+<dd><p>motion/controller Action Client, it sends the planner via points to the Controller Node in order to move the robot
+toward a target location.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utilities.patrol_robot.helper.InterfaceHelper.is_battery_full">
+<span class="sig-name descname"><span class="pre">is_battery_full</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utilities/patrol_robot/helper.html#InterfaceHelper.is_battery_full"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utilities.patrol_robot.helper.InterfaceHelper.is_battery_full" title="Permalink to this definition"></a></dt>
+<dd><p>Method to return weather the transition that ends the recharging state should be returned</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utilities.patrol_robot.helper.InterfaceHelper.is_battery_low">
+<span class="sig-name descname"><span class="pre">is_battery_low</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utilities/patrol_robot/helper.html#InterfaceHelper.is_battery_low"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utilities.patrol_robot.helper.InterfaceHelper.is_battery_low" title="Permalink to this definition"></a></dt>
+<dd><p>Method to return weather the transition that start the recharging state should be returned</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utilities.patrol_robot.helper.InterfaceHelper.should_reasoning_start">
+<span class="sig-name descname"><span class="pre">should_reasoning_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utilities/patrol_robot/helper.html#InterfaceHelper.should_reasoning_start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utilities.patrol_robot.helper.InterfaceHelper.should_reasoning_start" title="Permalink to this definition"></a></dt>
+<dd><p>Method to return weather the transition that start the reasoning state should be returned</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utilities.patrol_robot.helper.InterfaceHelper.should_pointing_start">
+<span class="sig-name descname"><span class="pre">should_pointing_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utilities/patrol_robot/helper.html#InterfaceHelper.should_pointing_start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utilities.patrol_robot.helper.InterfaceHelper.should_pointing_start" title="Permalink to this definition"></a></dt>
+<dd><p>Method to return weather the transition that start the pointing state should be returned</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utilities.patrol_robot.helper.InterfaceHelper.reason">
+<span class="sig-name descname"><span class="pre">reason</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utilities/patrol_robot/helper.html#InterfaceHelper.reason"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utilities.patrol_robot.helper.InterfaceHelper.reason" title="Permalink to this definition"></a></dt>
+<dd><p>Method that uses the armor client to simplify the Ontology reasoning procedure</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utilities.patrol_robot.helper.InterfaceHelper.list_formatter">
+<span class="sig-name descname"><span class="pre">list_formatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utilities/patrol_robot/helper.html#InterfaceHelper.list_formatter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utilities.patrol_robot.helper.InterfaceHelper.list_formatter" title="Permalink to this definition"></a></dt>
+<dd><p>Method that well formats the strings return by the querys function of the pkg armor api</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="src.html" class="btn btn-neutral float-left" title="Src" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Matteo Carlone.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

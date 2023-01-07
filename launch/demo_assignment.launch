@@ -80,7 +80,8 @@
   <node pkg="patrol_robot" type="marker_server" name="marker_server" required="true"/>
 
   <node pkg="aruco_ros" type="aruco_detector" name="aruco_detector" args="image:=/camera/rgb/image_raw" required="true"/>
-  <!--
+
+  <!-- Node to see the output
   <node pkg="image_view" type="image_view" name="image_view" args="image:=/camera/rgb/image_raw" required="true"/> -->
 
   <!-- Start Mapper to genreate map from laser scans 
@@ -89,7 +90,7 @@
     <rosparam file="$(find patrol_robot)/param/mapper.yaml"/>
   </node> -->
 
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find patrol_robot)/config/sim.rviz" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find patrol_robot)/config/my_sim.rviz" />
 
   <!-- <node name="rviz" pkg="rviz" type="rviz"/> -->
 
