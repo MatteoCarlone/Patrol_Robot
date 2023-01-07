@@ -134,6 +134,24 @@ one for the Mapping of the unkonwn environment and one for the actual Navigation
 
   The DWA planner depends on the local costmap which provides obstacle information. Therefore, tuning the parameters for the local costmap is crucial for optimal behavior of DWA local planner
   All the parameters for both global and local planning are in the [param folder]().
+  
+## Diagrams
+
+The whole architecture is well described in the following UML Diagrams.
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/81308076/211151491-ae925c43-342f-4479-9b4a-58ec1a3561e3.PNG"  alt="drawing" width="700" />
+</p>
+
+`caption` :
+
+	- Time Squence Diagram of the project, with a draft of communication transitions between states in time.
+	  To be more precise in this diagram is visible the hierachical sub-state machine structure, with 
+	  the moving sub-machine called in two different instances both in the general movement and in the move
+	  to recharge dock action. Moreover you can see:
+	  1. the first mission phase with aruco detection and arm motion
+	  2. the second phase with the Navigation and Mapping
+
 
 ## Launching the Software
 
@@ -180,6 +198,15 @@ Note that the program runs in automatically in a loop and there's no need of the
 Check the `roslaunch` outcome to get the path where logs are stored. usually, it is `~/.ros/log/`.
 That folder should also contain a link to the `latest` produced log.
 
+*Expected Behaviour:*
+
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/81308076/211152260-6c02ed5b-c8d0-45b2-a932-35f3cbf5b822.png"  alt="drawing" width="700" />
+</p>
+
+
+
 ### System's limitations
 The main limitation of this project relates to the pre-developed software architecture, as it assumed a 2D environment without obstacles and without considering the actual movement of the robot, which could be subject to unforeseen delays and interruptions. Overall this limitation affects only the robot recharge: 
 The robot recharge when the ontology knows it's in the starting location so there could be the possibility that the robot start recharging when moving from the starting location to a target one. This behaviour is coherent with the pre-defined architecture, but not consistent with a realistic simulation.
@@ -197,6 +224,11 @@ Two other limitations lie in the Marker detection.
   I wanted to generate a map of the environment using the KartoSlam algorithm ,  and explore-lite which is a software package that provides tools for exploring and       mapping unknown environments with a mobile robot. It includes algorithms for autonomous exploration.
   here an image of the process:
   
+  <p align="center">
+	<img src="https://user-images.githubusercontent.com/81308076/211152417-1950f5a9-a732-45f5-903e-53128231d738.png"  alt="drawing" width="700" />
+  </p>
+  
+
   Then save the map and load it whenever you launch the program.
   By doing this the robot would need an algorithm to localize itself in the environment ( for instance I used the AMCL algorithm ) while moving with the aformentioned   move base package.
   I actually tried this method but there were many incoherences between the AMCL localization algorithm and the pre-loaded map.
