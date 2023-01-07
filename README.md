@@ -193,12 +193,12 @@ Two other limitations lie in the Marker detection.
 - detect markers in a more natural environment by tuning the camera and the detection parameters
 - orient the camera to the aruco markers by calibrating its position in the environment
 - realize my first mapping idea:
+  
   I wanted to generate a map of the environment using the KartoSlam algorithm ,  and explore-lite which is a software package that provides tools for exploring and       mapping unknown environments with a mobile robot. It includes algorithms for autonomous exploration.
   here an image of the process:
   
   Then save the map and load it whenever you launch the program.
   By doing this the robot would need an algorithm to localize itself in the environment ( for instance I used the AMCL algorithm ) while moving with the aformentioned   move base package.
-  
   I actually tried this method but there were many incoherences between the AMCL localization algorithm and the pre-loaded map.
 
 --------
