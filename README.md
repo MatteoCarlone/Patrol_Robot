@@ -40,6 +40,10 @@ Overall, the combination of the turtlebot3's existing features and the added tur
 </p>
 
 ### The Environment
+The Environment is exactly the same of the of this [repo]() in which I tested the saftware architecture at the base of the simulation, with the only different that now is a 3-D space with structural obstacles that the robot will have to avoid and take into account while moving.
+In addition to this, there's a separated room in which the robot spawn and start a marker detection to retrive all the necessary environment indormations.
+ALl the simulation world description is located in the [world folder]() as the assignment_world.world file.
+Since the Mrker detection was quite difficult in the default environment I decided to change it removing some shaders and background artifacts to let the robot better detect.
 
 ### Mission Phases 
 
@@ -133,13 +137,69 @@ one for the Mapping of the unkonwn environment and one for the actual Navigation
 
 ## Launching the Software
 
+This software has been based on ROS Noetic, and it has been developed with this Docker-based
+[environment](https://hub.docker.com/repository/docker/carms84/exproblab), which already 
+provides all the required dependencies. 
+
 ### Installation
 
+Follow these steps to install the software.
+ - Clone this repository inside your ROS workspace (which should be sourced in your `.bashrc`).
+ - Clone this MoveIt repository inside your ROS workspace (which should be sourced in your `.bashrc`).
+ - Run `chmod +x <file_name>` for each file inside the `scripts` folder.
+ - Install `xterm` by entering the command `sudo apt install -y xterm`.
+ - Install `smach` by entering the command `sudo apt-get install ros-noetic-smach-ros`
+ - Install `aRMOR` directly from [here](https://github.com/EmaroLab/ros_multi_ontology_references.git). or manually download the latest release of each module from the following repositories:
+	- [***ARMOR***](https://github.com/EmaroLab/armor)
+	+ [***AMOR***](https://github.com/EmaroLab/multi_ontology_reference)
+	+ [***armor_msgs***](https://github.com/EmaroLab/armor_msgs)
+
+ - Clone the [`armor_api`](https://github.com/buoncubi/armor_py_api) repository in your workspace
+
+ Note: [Here](http://emarolab.github.io/armor_py_api/) you can find the full documentation of the [`armor_api`](https://github.com/buoncubi/armor_py_api).
+ 
+ - Install MoveIt, Look [Here](https://ros-planning.github.io/moveit_tutorials/doc/getting_started/getting_started.html)
+ - Clone this [repo](https://github.com/CarmineD8/aruco_ros) for aruco detection and add it to your workspace
+ - Clone this [repo](https://github.com/CarmineD8/SLAM_packages) for the SLAM gmapping algorithm and add it to your workspace
+ - Clone this [repo]( https://github.com/CarmineD8/planning) for the Move Base Navigation pkg and add it to your workspace
+ - Cross your fingers and Run `catkin_make` from the root of your ROS workspace.
+ 
 ### Launchers
 
+Use the following command to launch the software a spawn:
+- The Gazebo environment with the robot in the separate room.
+- Rviz already set up to visualize the map created by the Gmapping algorithm, the Move Base global and local cost map, the laser output and the robot model.
+- some xterm windows related to all the software components.
+
+```bash
+roslaunch patrol_robot demo_assignment.launch
+```
+
+Note that the program runs in automatically in a loop and there's no need of the user to start up the finite state machine's transitions.
+
+Check the `roslaunch` outcome to get the path where logs are stored. usually, it is `~/.ros/log/`.
+That folder should also contain a link to the `latest` produced log.
+
 ### System's limitations
+The main limitation of this project relates to the pre-developed software architecture, as it assumed a 2D environment without obstacles and without considering the actual movement of the robot, which could be subject to unforeseen delays and interruptions. Overall this limitation affects only the robot recharge: 
+The robot recharge when the ontology knows it's in the starting location so there could be the possibility that the robot start recharging when moving from the starting location to a target one. This behaviour is coherent with the pre-defined architecture, but not consistent with a realistic simulation.
+Two other limitations lie in the Marker detection.
+1. The environment has been changed for a robust detection of the markers
+2. the arm orient the camera toward the target in an hard coded manner to fast up the operation, Initially I did a round detection at various altitudes but for the sake of faster testing I decided to hard code 5 arm positions.
 
 ### Possible Improvements
+
+- adjust the recharge routine to make it more realistic 
+- detect markers in a more natural environment by tuning the camera and the detection parameters
+- orient the camera to the aruco markers by calibrating its position in the environment
+- realize my first mapping idea:
+  I wanted to generate a map of the environment using the KartoSlam algorithm ,  and explore-lite which is a software package that provides tools for exploring and       mapping unknown environments with a mobile robot. It includes algorithms for autonomous exploration.
+  here an image of the process:
+  
+  Then save the map and load it whenever you launch the program.
+  By doing this the robot would need an algorithm to localize itself in the environment ( for instance I used the AMCL algorithm ) while moving with the aformentioned   move base package.
+  
+  I actually tried this method but there were many incoherences between the AMCL localization algorithm and the pre-loaded map.
 
 --------
 
